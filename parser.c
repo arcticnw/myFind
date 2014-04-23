@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
+#include <stdio.h>
 
 #include "header.h"
 #include "parser.h"
@@ -11,6 +12,7 @@ int position;
 condition_t *parseArguments(int argc, char **argv)
 {
     position = 2;  /* position 0 = executable name; position 1 = path */
+    /*printf("Parsing from position %d to %d\n", position, argc);*/
     return parseArgumentsNextJunction(argc, argv);
 }
 
@@ -69,6 +71,8 @@ condition_t * createConditionNode()
     condition->data2 = NULL;
     condition->data2content = NONE;
     
+    printf("Creating empty condition\n");
+    
     return (condition);
 }
 
@@ -92,6 +96,8 @@ data_t * createStringDataNode(char * originalData)
     }
     strcpy(data->stringData, originalData);
     
+    printf("Creating string data %s\n", originalData);
+    
     return (data);
 }
 
@@ -107,6 +113,8 @@ data_t * createConditionDataNode(condition_t * condition)
     
     data->conditionData = condition;
     
+    printf("Creating condition data\n");
+    
     return (data);
 }
 
@@ -119,6 +127,9 @@ condition_t * mergeConditions(condition_t * condition1, condition_t * condition2
     condition->data1content = CONDITION;
     condition->data2 = createConditionDataNode(condition2);
     condition->data2content = CONDITION;
+    
+    printf("Merging conditions\n");
+    
     return (condition);
 }
 
@@ -126,16 +137,19 @@ condition_t * parseArgumentsNext(int argc, char **argv)
 {
     char * cArg;
     condition_t * condition;
-
+    
+    printf("Entering PAN position: %d\n", position);
+    
     for (; position < argc; position++)
     {
-        cArg = argv[position];
-        if (strcmp(cArg, "("))
+	cArg = argv[position];
+        printf("PAN: %s\n", cArg);
+        if (!strcmp(cArg, "("))
         {
             position++;
             return (parseArgumentsNextJunction(argc, argv));
         }
-        else if (strcmp(cArg, "name"))
+        else if (!strcmp(cArg, "name"))
         {
             position++;
             cArg = argv[position];
@@ -145,14 +159,17 @@ condition_t * parseArgumentsNext(int argc, char **argv)
             condition->data1 = createStringDataNode(cArg);
             condition->data1content = STRING;
             
+            position++;
+            
             return (condition);
         }
-        else if (strcmp(cArg, ")"))
+        else if (!strcmp(cArg, ")"))
         {
             err(2, "parseArgumentsNext - argument error, misguided )");
         }
     }
-    err(2, "parseArgumentsNext - argument error, unknown state");
+    printf("Leaving PAN\n");
+    /*err(2, "parseArgumentsNext - argument error, unknown state");*/
     return (createConditionNode());
 }
 
@@ -164,6 +181,8 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     condition_t * conditionBuf = NULL;
     condition_t * conditionTemp = NULL;
     
+    printf("Entering PANJ position: %d\n", position);
+    
     /* Fetch the first condition explicitly */
     condition = parseArgumentsNext(argc, argv);
     /* assert(condition); / * already handled */
@@ -171,12 +190,13 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     for (; position < argc; position++)
     {
         cArg = argv[position];
-        if (strcmp(cArg, ")"))
+        printf("PANJ: %s\n", cArg);
+        if (!strcmp(cArg, ")"))
         {
             position++;
             break;
         }
-        else if (strcmp(cArg, "or"))
+        else if (!strcmp(cArg, "or"))
         {
             position++;
             
@@ -189,7 +209,7 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
                 conditionBuf = conditionTemp;
             }
             else
-            {
+	    {
                 /* buffer is not empty => merge the buffer with main condition
                      via 'OR' operation and refill the buffer */
                 condition = mergeConditions(condition, conditionBuf, checkOr);
@@ -201,7 +221,7 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
         else
         {
             /* implicit 'AND' operation between arguments */
-            if (strcmp(cArg, "and"))
+            if (!strcmp(cArg, "and"))
             {
                 position++;
             }
@@ -229,6 +249,7 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
         condition = mergeConditions(condition, conditionBuf, checkOr);
         conditionBuf = NULL;
     }
-        
+    
+    printf("Leaving PANJ\n");
     return (condition);
 }
