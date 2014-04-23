@@ -53,7 +53,7 @@ void dump(condition_t * c)
     printf("]");
 }
 
-int usage(char * name)
+void usage(char * name)
 {
     printf("Usage: %s path [operand_expression ..]\n"
 	    "\n"

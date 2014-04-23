@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h> /* for realpath */
 #include <string.h>
 #include <err.h>
 #include <stdio.h>
@@ -24,30 +25,30 @@ int crawl(char * path, condition_t * condition)
         return (0);
     }
     
-    while (dirEntry = readdir(dir))
+    while ((dirEntry = readdir(dir)))
     {
         localPathLength = strlen(path) + strlen(dirEntry->d_name) + 2;
         localPath = malloc(localPathLength);
         sprintf(localPath, "%s/%s", path, dirEntry->d_name);
         
-        realPath = realpath(localPath, NULL);
+        realPath = realpath(localPath, (char*)NULL);
         
         f_entry.dirEntry = dirEntry;
         f_entry.localPath = localPath;
         f_entry.realPath = realPath;
         
-        result = condition.process(condition->data1, condition->data2, f_entry);
+        result = condition->process(condition->data1, condition->data2, f_entry);
         
         if (result)
         {
-            printf(realPath);
+            printf("%s\n", realPath);
         }
         
         free(realPath);
         free(localPath);
     }
     
-    closedir(path);
+    closedir(dir);
     
     return (0);
 }

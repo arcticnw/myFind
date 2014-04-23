@@ -3,16 +3,16 @@
 #include "header.h"
 #include "checker.h"
 
-int checkTrue(data_t *data1, data_t *data2, file_tfile)
+int checkTrue(data_t *data1, data_t *data2, file_t file)
 {
     return 1;
 }
-int checkFalse(data_t *data1, data_t *data2, file_tfile)
+int checkFalse(data_t *data1, data_t *data2, file_t file)
 {
     return 0;
 }
 
-int checkAnd(data_t *data1, data_t *data2, file_tfile)
+int checkAnd(data_t *data1, data_t *data2, file_t file)
 {
     int leftSide = 0;
     int rightSide = 0;
@@ -43,7 +43,7 @@ int checkAnd(data_t *data1, data_t *data2, file_tfile)
       
     return (leftSide && rightSide);
 }
-int checkOr(data_t *data1, data_t *data2, file_tfile)
+int checkOr(data_t *data1, data_t *data2, file_t file)
 {
     int leftSide = 0;
     int rightSide = 1;
@@ -72,7 +72,7 @@ int checkOr(data_t *data1, data_t *data2, file_tfile)
     return (leftSide || rightSide);
 }
 
-int checkName(data_t *data1, data_t *data2, file_tfile)
+int checkName(data_t *data1, data_t *data2, file_t file)
 {
     return (1);
 }

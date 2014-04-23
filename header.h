@@ -18,6 +18,7 @@ typedef union data_p data_t;
 struct file_p {
 	struct dirent *dirEntry;
     char * localPath;
+    char * realPath;
 	struct stat d_entry_stat;
 };
 typedef struct file_p file_t;

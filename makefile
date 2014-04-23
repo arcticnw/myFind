@@ -1,9 +1,10 @@
 ifeq ($(OS), Windows_NT)
 	CC = gcc
 endif
-CFLAGS = -Wall -pedantic -std=c90
+#CFLAGS = -Wall -pedantic -std=c90
+CFLAGS = -Wall -pedantic
 EXECUTABLE=main
-SOURCES=main.c parser.c checker.c
+SOURCES=main.c parser.c checker.c crawler.c
 OBJECTS=$(SOURCES:.c=.o)
 
 all: $(SOURCES) $(EXECUTABLE)
