@@ -9,7 +9,7 @@
 
 int position;
 
-condition_t *parseArguments(int argc, char **argv)
+condition_t *parseArgumentsToCondition(int argc, char **argv)
 {
     position = 2;  /* position 0 = executable name; position 1 = path */
     /*printf("Parsing from position %d to %d\n", position, argc);*/
@@ -71,8 +71,6 @@ condition_t * createConditionNode()
     condition->data2 = NULL;
     condition->data2content = NONE;
     
-    printf("Creating empty condition\n");
-    
     return (condition);
 }
 
@@ -96,8 +94,6 @@ data_t * createStringDataNode(char * originalData)
     }
     strcpy(data->stringData, originalData);
     
-    printf("Creating string data %s\n", originalData);
-    
     return (data);
 }
 
@@ -113,8 +109,6 @@ data_t * createConditionDataNode(condition_t * condition)
     
     data->conditionData = condition;
     
-    printf("Creating condition data\n");
-    
     return (data);
 }
 
@@ -128,8 +122,6 @@ condition_t * mergeConditions(condition_t * condition1, condition_t * condition2
     condition->data2 = createConditionDataNode(condition2);
     condition->data2content = CONDITION;
     
-    printf("Merging conditions\n");
-    
     return (condition);
 }
 
@@ -138,12 +130,10 @@ condition_t * parseArgumentsNext(int argc, char **argv)
     char * cArg;
     condition_t * condition;
     
-    printf("Entering PAN position: %d\n", position);
-    
     for (; position < argc; position++)
     {
-	cArg = argv[position];
-        printf("PAN: %s\n", cArg);
+        cArg = argv[position];
+        
         if (!strcmp(cArg, "("))
         {
             position++;
@@ -168,7 +158,6 @@ condition_t * parseArgumentsNext(int argc, char **argv)
             err(2, "parseArgumentsNext - argument error, misguided )");
         }
     }
-    printf("Leaving PAN\n");
     /*err(2, "parseArgumentsNext - argument error, unknown state");*/
     return (createConditionNode());
 }
@@ -181,8 +170,6 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     condition_t * conditionBuf = NULL;
     condition_t * conditionTemp = NULL;
     
-    printf("Entering PANJ position: %d\n", position);
-    
     /* Fetch the first condition explicitly */
     condition = parseArgumentsNext(argc, argv);
     /* assert(condition); / * already handled */
@@ -190,7 +177,6 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     for (; position < argc; position++)
     {
         cArg = argv[position];
-        printf("PANJ: %s\n", cArg);
         if (!strcmp(cArg, ")"))
         {
             position++;
@@ -250,6 +236,5 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
         conditionBuf = NULL;
     }
     
-    printf("Leaving PANJ\n");
     return (condition);
 }

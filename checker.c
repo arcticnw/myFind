@@ -1,19 +1,18 @@
 #include <err.h>
 
 #include "header.h"
-#include "parser.h"
 #include "checker.h"
 
-int checkTrue(data_t *data1, data_t *data2, file_t *file)
+int checkTrue(data_t *data1, data_t *data2, file_tfile)
 {
     return 1;
 }
-int checkFalse(data_t *data1, data_t *data2, file_t *file)
+int checkFalse(data_t *data1, data_t *data2, file_tfile)
 {
     return 0;
 }
 
-int checkAnd(data_t *data1, data_t *data2, file_t *file)
+int checkAnd(data_t *data1, data_t *data2, file_tfile)
 {
     int leftSide = 0;
     int rightSide = 0;
@@ -44,7 +43,7 @@ int checkAnd(data_t *data1, data_t *data2, file_t *file)
       
     return (leftSide && rightSide);
 }
-int checkOr(data_t *data1, data_t *data2, file_t *file)
+int checkOr(data_t *data1, data_t *data2, file_tfile)
 {
     int leftSide = 0;
     int rightSide = 1;
@@ -73,7 +72,7 @@ int checkOr(data_t *data1, data_t *data2, file_t *file)
     return (leftSide || rightSide);
 }
 
-int checkName(data_t *data1, data_t *data2, file_t *file)
+int checkName(data_t *data1, data_t *data2, file_tfile)
 {
     return (1);
 }

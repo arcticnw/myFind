@@ -16,13 +16,13 @@ union data_p {
 typedef union data_p data_t;
 
 struct file_p {
-	struct dirent *d_entry;
-	int d_entry_stat_filled;
+	struct dirent *dirEntry;
+    char * localPath;
 	struct stat d_entry_stat;
 };
 typedef struct file_p file_t;
 
-typedef int(*processer_t) (data_t *, data_t *, file_t *);
+typedef int(*processer_t) (data_t *, data_t *, file_t);
 
 struct condition_p {
 	processer_t process;

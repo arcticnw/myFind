@@ -2,9 +2,8 @@
 #define _PARSER_H_
 
 #include "header.h"
-#include "parser.h"
 
-condition_t *parseArguments(int argc, char ** argv);
+condition_t *parseArgumentsToCondition(int argc, char ** argv);
 void disposeCondition(condition_t * condition);
 
 condition_t * createConditionNode();
@@ -14,4 +13,5 @@ condition_t * mergeConditions(condition_t * condition1, condition_t * condition2
 
 condition_t * parseArgumentsNext(int argc, char ** argv);
 condition_t * parseArgumentsNextJunction(int argc, char ** argv);
+
 #endif
