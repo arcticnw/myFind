@@ -13,4 +13,7 @@ int checkOr(condition_t * condition, file_t file);
 
 int checkName(condition_t * condition, file_t file);
 
+
+void tolowerarray(char * data);
+
 #endif

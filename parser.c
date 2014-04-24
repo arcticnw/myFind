@@ -254,6 +254,7 @@ condition_t * makeIntCondition(processer_t processer)
 condition_t * tryParseCondition(char * cArg, argsBundle_t * argsBundle)
 {
     condition_t * condition = NULL;
+    char * tmp;
     
     if (!strcmp(cArg, "name"))
     {
@@ -263,6 +264,7 @@ condition_t * tryParseCondition(char * cArg, argsBundle_t * argsBundle)
     else if (!strcmp(cArg, "iname"))
     {
         condition = makeStringCondition(checkName);
+        tolowerarray(condition->data1.stringData);
         condition->params.caseSensitivity = INSENSITIVE;
     }
     

@@ -67,16 +67,40 @@ int checkOr(condition_t * condition, file_t file)
 
 int checkName(condition_t * condition, file_t file)
 {
-    int flags = 0;
+    char * fileName;
+    int returnValue;
     
     assert(condition);
     assert(condition->data1content == STRING);
     
-    flags |= FNM_PATHNAME;    
     if (condition->params.caseSensitivity == INSENSITIVE)
     {
-        flags |= FNM_CASEFOLD;
+        fileName = (char*) malloc(sizeof(char) * strlen(file_t.dirEntry->d_name));
+        strcpy(fileName, file_t.dirEntry->d_name);
+        tolowerarray(fileName);
+    }
+    else
+    {
+        fileName = file_t.dirEntry->d_name;
     }
     
-    return (!fnmatch(condition->data1.stringData, file.dirEntry->d_name, flags));
+    returnValue = !fnmatch(condition->data1.stringData, file.dirEntry->d_name, FNM_PATHNAME)
+    
+    if (condition->params.caseSensitivity == INSENSITIVE)
+    {
+        free(fileName);
+    }
+    
+    return (returnValue);
+}
+
+
+
+void tolowerarray(char * data)
+{
+    int i;
+    for(i = 0; data[i] != '\0'; i++)
+    {
+        data[i] = tolower(data[i]);
+    }
 }
