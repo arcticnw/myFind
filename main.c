@@ -20,9 +20,9 @@ void dumpData(data_t data, contents_t content)
     }
     else if (content == CONDITION)
     {
-        printf("");
+        /*printf("");*/
         dump(data.conditionData);
-        printf("");
+        /*printf("");*/
     }
     else if (content == NONE)
     {

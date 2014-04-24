@@ -34,7 +34,8 @@ argsBundle_t parseArguments(int pargc, char ** pargv)
 
 void initializeArgsBundle(argsBundle_t * argsBundle)
 {
-    argsBundle->linkResolution = NOFOLLOW;
+    argsBundle->followLinks = 0;
+    argsBundle->ignoreHidden = 1;
     argsBundle->path = NULL;
     argsBundle->condition = NULL;
     argsBundle->action = NULL;

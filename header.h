@@ -60,6 +60,7 @@ struct argsBundle_p {
     action_t * action;
     char * path;
     char followLinks;
+    char ignoreHidden;
 };
 typedef struct argsBundle_p argsBundle_t;
 

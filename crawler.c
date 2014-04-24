@@ -13,24 +13,40 @@
 
 extern int errno;
 
-void crawl(argsBundle_t argsBundle)
+nodelist_t * initializeNodeList()
 {
     nodelist_t * nodes = NULL;
-    node_t * cNode = NULL;
-    node_t * cNodeNext = NULL;
     
     nodes = (nodelist_t*)malloc(sizeof(nodelist_t));
+    if (!nodes)
+    {
+        err(1, "initializeNodeList - malloc (nodes)\n");
+    }
+    
     nodes->count = 0;
     nodes->first = NULL;
     
-    crawlRecursive(argsBungle.path, argsBundle, nodes);
+    return (nodes);
+}
+
+void disposeNodeList(nodelist_t * list)
+{
+    node_t * cNode;
+    note_t * cNodeNext;
     
-    for (cNode = nodes->first; cNode; cNodeNext = cNode->next)
+    if (!list)
     {
-	free(cNode);
-	cNode = cNodeNext;
+        return;
     }
-    free(nodes);
+    
+    for (cNode = nodes->first; cNode;)
+    {
+        cNodeNext = cNode->next
+        free(cNode);
+        cNode = cNodeNext;
+    }
+    
+    free(list);
 }
 
 int tryAddNode(nodelist_t * list, ino_t nodeid)
@@ -40,10 +56,10 @@ int tryAddNode(nodelist_t * list, ino_t nodeid)
 
     for (cNode = list->first; cNode; )
     {
-	if (cNode->nodeid == nodeid)
-	{
-	    return (0);
-	}
+        if (cNode->nodeid == nodeid)
+        {
+            return (0);
+        }
     }
     
     newNode = (node_t*)malloc(sizeof(node_t));
@@ -53,19 +69,29 @@ int tryAddNode(nodelist_t * list, ino_t nodeid)
     
     if (list->count == 0)
     {
-	list->first = newNode;
-	list->last = newNode;
+        list->first = newNode;
     }
     else
     {
-	list->last->next = newNode;
-	list->last = newNode;
+        list->last->next = newNode;
     }
+    list->last = newNode;
     
     return (1);
 }
 
-void crawlRecursive(char * path, argsBundle_t argsBundle, nodelist_t * directoryNodes)
+void crawl(const argsBundle_t argsBundle)
+{
+    nodelist_t * nodes = NULL;
+    
+    nodes = initializeNodeList();
+    
+    crawlRecursive(argsBungle.path, argsBundle, nodes);
+    
+    disposeNodeList(nodes);
+}
+
+void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t * list)
 {
     DIR * dir;                 /* current directory */
     DIR * subdir;              /* subdirectory */
@@ -75,11 +101,8 @@ void crawlRecursive(char * path, argsBundle_t argsBundle, nodelist_t * directory
     int localPathLength;       /* (string) length of relative path */
     char * realPath = NULL;    /* absolute path to current file */
     char isLink;               /* current file is symlink */
-    char isStatFetched;        /* is file status fetched */
     file_t f_entry;            /* current file information pack */
     int result;                /* result of matching with conditions */
-    
-/*    printf("opening %s\n", path);*/
     
     /* open directory */
     if (!(dir = opendir(path)))
@@ -96,9 +119,10 @@ void crawlRecursive(char * path, argsBundle_t argsBundle, nodelist_t * directory
         {
             continue;
         }
-        if (dirEntry->d_name[0] == '.') /* DBG */
+        
+        if (argsBundle.ignoreHidden && dirEntry->d_name[0] == '.')
         {
-	    continue;
+            continue;
         }
     
         /* get relative path */
@@ -106,111 +130,88 @@ void crawlRecursive(char * path, argsBundle_t argsBundle, nodelist_t * directory
         localPath = malloc(localPathLength);
         sprintf(localPath, "%s/%s", path, dirEntry->d_name);
         
-	/* get absolute path */
+        /* get absolute path */
         realPath = realpath(localPath, (char*)NULL);
         
-	/* get file status */
-	if (argsBundle.linkResolution == FOLLOW)
-	{
-	    if (stat(localPath, &dirEntryStat))
-	    {
-		fprintf(stderr, "Unable to access file %s: %s\n", localPath, strerror(errno));
-		isLink = 0;
-		isStatFetched = 0;
-	    }
-	    else
-	    {
-		isStatFetched = 1;
-	    }
-	}
-	else /*if (argsBundle.linkResolution == NOFOLLOW)*/
-	{
-	    if (lstat(localPath, &dirEntryStat))
-	    {
-		fprintf(stderr, "Unable to access file %s: %s\n", localPath, strerror(errno));
-		isLink = 0;
-		isStatFetched = 0;
-	    }
-	    else
-	    {
-		isStatFetched = 1;
-	    }
-	}
-
-	if (isStatFetched)
-	{
-	    switch (dirEntryStat.st_mode & S_IFMT) {
-		case S_IFBLK:  printf("block device");            break;
-		case S_IFCHR:  printf("character device");        break;
-		case S_IFDIR:  printf("directory");               break;
-		case S_IFIFO:  printf("FIFO/pipe");               break;
-		case S_IFLNK:  printf("symlink");                 break;
-		case S_IFREG:  printf("regular file");            break;
-		case S_IFSOCK: printf("socket");                  break;
-		default:       printf("unknown");                break;
-	    }
-
-	    
-	    if (S_ISLNK(dirEntryStat.st_mode))
-	    {
-		isLink = 1;
-	    }
-
-	    if (argsBundle.condition)
-	    {
-		/*printf("making file pack\n");*/
-		/* prepare file infomation pack */
-		f_entry.dirEntry = dirEntry;
-		f_entry.localPath = localPath;
-		f_entry.realPath = realPath;
-		f_entry.dirEntryStat = dirEntryStat;
-            
-		/* match file with find conditions */
-		/*printf("testing file\n");*/
-		result = argsBundle.condition->process(argsBundle.condition, f_entry);
-	    }
-	    else
-	    {
-		result = 1;
-	    }
-            
-            /* if matching => apply actions */
-            if (result)
+        /* get file status */
+        if (argsBundle.followLinks)
+        {
+            if (stat(localPath, &dirEntryStat))
             {
-		/*printf("running action\n");*/
-                if (!argsBundle.action)
-                {
-		    printf("THIS ONE");
-/*                  printf("%s\n", localPath);*/
-                }
-                else
-                {
-                    err(9, "NYI");
-                }
+                fprintf(stderr, "Unable to access file %s: %s\n", localPath, strerror(errno));
+                isLink = 0;
+                goto cleanupAndContinue; /* ask if allowed to use goto */
+            }
+        }
+        else /*if (!argsBundle.followLinks)*/
+        {
+            if (lstat(localPath, &dirEntryStat))
+            {
+                fprintf(stderr, "Unable to access file %s: %s\n", localPath, strerror(errno));
+                isLink = 0;
+                goto cleanupAndContinue; /* ask if allowed to use goto */
+            }
+        }
+
+        if (S_ISLNK(dirEntryStat.st_mode))
+        {
+            isLink = 1;
+        }
+
+        if (argsBundle.condition)
+        {
+            /* prepare file infomation pack */
+            f_entry.dirEntry = dirEntry;
+            f_entry.localPath = localPath;
+            f_entry.realPath = realPath;
+            f_entry.dirEntryStat = dirEntryStat;
+                
+            /* match file with find conditions */
+            result = argsBundle.condition->process(argsBundle.condition, f_entry);
+        }
+        else
+        {
+            /* no condition => match everything */
+            result = 1;
+        }
+            
+        /* if matching => apply actions */
+        if (result)
+        {
+            if (!argsBundle.action)
+            {
+                printf("%s\n", localPath);
+            }
+            else
+            {
+                err(9, "NYI\n");
             }
         }
         
-	/*printf("checking directory\n");*/
-
+            
         /* if file isn't symlink and following is disabled, attempt to 
              open file as directory and traverse it */
         
-        if ((argsBundle.linkResolution == FOLLOW || !isLink) &&
+        if ((argsBundle.followLinks || !isLink) &&
             (subdir = opendir(localPath)))
         {
-    	    printf(" ENTERING \n");
             closedir(subdir);
-            crawlRecursive(localPath, argsBundle);
+            if (argsBundle.followLinks && !tryAddNode(list, dirEntryStat->st_ino))
+            {
+                fprintf(stderr, "File system loop detected: %s\n", localPath);
+            }
+            else
+            {
+                crawlRecursive(localPath, argsBundle, list);
+            }
         }
-        
-	/*printf("deallocating\n");*/
+            
+cleanupAndContinue: /* ask if allowed to use goto */
+            
         /* dealloc paths */
         free(realPath);
         free(localPath);
-        
-        printf ("\n");
     }
-    
     
     /* close directory */
     closedir(dir);
