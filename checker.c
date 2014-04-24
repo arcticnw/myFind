@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <strings.h>
+#include <fnmatch.h>
 
 #include "header.h"
 #include "checker.h"
@@ -66,12 +67,16 @@ int checkOr(condition_t * condition, file_t file)
 
 int checkName(condition_t * condition, file_t file)
 {
+    int flags = 0;
+    
     assert(condition);
     assert(condition->data1content == STRING);
     
+    flags |= FNM_PATHNAME;    
     if (condition->params.caseSensitivity == INSENSITIVE)
     {
-        return (!strcasecmp(condition->data1.stringData, file.dirEntry->d_name));
+        flags |= FNM_CASEFOLD;
     }
-    return (!strcmp(condition->data1.stringData, file.dirEntry->d_name));
+    
+    return (!fnmatch(condition->data1.stringData, file.dirEntry->d_name, flags));
 }

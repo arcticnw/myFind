@@ -57,7 +57,7 @@ void usage(char * name)
 
 int main(int argc, char ** argv)
 {
-    condition_t * cond;
+    argsBundle_t * args;
     int retV;
     
     printf("hello\n");
@@ -68,13 +68,15 @@ int main(int argc, char ** argv)
         return 0;
     }
     
-    cond = parseArgumentsToCondition(argc, argv);
+    args = parseArguments(argc, argv);
+    /*
     dump(cond);
-    printf("\n");
+    printf("\n"); 
+    */
     
-    retV = crawl(argv[1], cond);
+    retV = crawl(args);
     
-    disposeCondition(cond);
+    disposeArgsBundle(args);
     
     printf("bye\n");
     

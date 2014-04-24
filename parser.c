@@ -2,6 +2,7 @@
 #include <string.h>
 #include <err.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "header.h"
 #include "parser.h"
@@ -11,22 +12,43 @@ int position;
 int argc;
 char ** argv;
 
-condition_t *
-parseArgumentsToCondition(int pargc, char ** pargv)
+argsBundle_t parseArguments(int pargc, char ** pargv)
 {
-    condition_t * condition;
-    
+    argsBundle_t argsBundle;
+
     argc = pargc;
     argv = pargv;
-    position = 2;  /* position 0 = executable name; position 1 = path */
     
-    condition = parseArgumentsNextJunction(argc, argv);
+    initializeArgsBundle(&argsBundle);
     
-    return (condition);
+    argsBundle.path = argv[1];
+    
+    position = 2;
+    argsBundle.condition = buildConditionTree(&argsBundle);
+    
+    argc = 0;
+    argv = NULL;
+    
+    return (argsBundle);
 }
 
-void 
-disposeCondition(condition_t * condition)
+void initializeArgsBundle(argsBundle_t * argsBundle)
+{
+    argsBundle->linkResolution = NOFOLLOW;
+    argsBundle->path = NULL;
+    argsBundle->condition = NULL;
+    argsBundle->action = NULL;
+}
+
+void disposeArgsBundle(argsBundle_t * argsBundle)
+{
+    disposeCondition(argsBundle->condition);
+    disposeAction(argsBundle->action);
+    
+    initializeArgsBundle(argsBundle);
+}
+
+void disposeCondition(condition_t * condition)
 {
     if (!condition) 
     {
@@ -59,10 +81,18 @@ disposeCondition(condition_t * condition)
     return;
 }
 
+void disposeAction(action_t * action)
+{
+    if (!action)
+    {
+        return;
+    }
+    /* TODO */
+    free(action);
+}
 
 
-condition_t * 
-createConditionNode()
+condition_t * createConditionNode()
 {
     condition_t * condition = (condition_t *)malloc(sizeof(condition_t));
     if (!condition)
@@ -79,8 +109,7 @@ createConditionNode()
     return (condition);
 }
 
-data_t 
-createStringDataNode(char * originalData)
+data_t createStringData(char * originalData)
 {
     int dataSize;
     data_t data;
@@ -90,7 +119,7 @@ createStringDataNode(char * originalData)
     data.stringData = (char *)malloc(sizeof(char) * dataSize);
     if (!data.stringData)
     {
-        err (1, "createStringDataNode - malloc (stringData)");
+        err (1, "createStringData - malloc (stringData)");
     }
     strcpy(data.stringData, originalData);
     data.stringData[dataSize-1] = '\0';
@@ -98,8 +127,7 @@ createStringDataNode(char * originalData)
     return (data);
 }
 
-data_t
-createIntDataNode(char * originalData, comparison_t * comparison)
+data_t createIntData(char * originalData, comparison_t * comparison)
 {
     char * parseData = originalData;
     int value;
@@ -107,7 +135,7 @@ createIntDataNode(char * originalData, comparison_t * comparison)
     
     if (strlen(originalData) == 0)
     { 
-        err(2, "createIntDataNode - argument error, empty string"); 
+        err(2, "createIntData - argument error, empty string"); 
     }
     
     if (originalData[0] == '+')
@@ -138,8 +166,7 @@ createIntDataNode(char * originalData, comparison_t * comparison)
     return (data);
 }
 
-data_t 
-createConditionDataNode(condition_t * condition)
+data_t createConditionData(condition_t * condition)
 {
     data_t data;
 
@@ -148,21 +175,21 @@ createConditionDataNode(condition_t * condition)
     return (data);
 }
 
-condition_t * 
-mergeConditionNodes(condition_t * condition1, condition_t * condition2, processer_t processer)
+
+condition_t * mergeConditionNodes(condition_t * condition1, condition_t * condition2, processer_t processer)
 {
     condition_t * condition = createConditionNode();
     condition->process = processer;
-    condition->data1 = createConditionDataNode(condition1);
+    condition->data1 = createConditionData(condition1);
     condition->data1content = CONDITION;
-    condition->data2 = createConditionDataNode(condition2);
+    condition->data2 = createConditionData(condition2);
     condition->data2content = CONDITION;
     
     return (condition);
 }
 
-condition_t * 
-parseStringCondition(processer_t processer)
+
+condition_t * makeStringCondition(processer_t processer)
 {
     condition_t * condition;
 
@@ -174,15 +201,14 @@ parseStringCondition(processer_t processer)
     condition = createConditionNode();
     condition->process = processer;
     
-    condition->data1 = createStringDataNode(argv[position]);
+    condition->data1 = createStringData(argv[position]);
     condition->data1content = STRING;
     position++;
 
     return (condition);
 }
 
-condition_t * 
-parseStringStringCondition(processer_t processer)
+condition_t * makeStringStringCondition(processer_t processer)
 {
     condition_t * condition;
 
@@ -194,19 +220,18 @@ parseStringStringCondition(processer_t processer)
     condition = createConditionNode();
     condition->process = processer;
     
-    condition->data1 = createStringDataNode(argv[position]);
+    condition->data1 = createStringData(argv[position]);
     condition->data1content = STRING;
     position++;
     
-    condition->data2 = createStringDataNode(argv[position]);
+    condition->data2 = createStringData(argv[position]);
     condition->data2content = STRING;
     position++;
 
     return (condition);
 }
 
-condition_t *
-parseIntCondition(processer_t processer)
+condition_t * makeIntCondition(processer_t processer)
 {
     condition_t * condition;
 
@@ -218,7 +243,7 @@ parseIntCondition(processer_t processer)
     condition = createConditionNode();
     condition->process = processer;
     
-    condition->data1 = createIntDataNode(argv[position], &(condition->params.comparison));
+    condition->data1 = createIntData(argv[position], &(condition->params.comparison));
     condition->data1content = INT;
     
     position++;
@@ -226,56 +251,101 @@ parseIntCondition(processer_t processer)
     return (condition); 
 }
 
-condition_t * 
-parseArgumentsNext()
+condition_t * tryParseCondition(char * cArg, argsBundle_t * argsBundle)
 {
-    char * cArg;
     condition_t * condition = NULL;
     
-    if (position >= argc) 
-    { 
-        err(2, "parseArgumentsNext - argument error, argument missing"); 
-    }
-    
-    cArg = argv[position];
-    position++;
-    
-    if (!strcmp(cArg, "("))
+    if (!strcmp(cArg, "name"))
     {
-        condition = parseArgumentsNextJunction();
-    }
-    else if (!strcmp(cArg, "!"))
-    {
-        condition = createConditionNode();
-        condition->process = checkNot;
-        condition->data1 = createConditionDataNode(parseArgumentsNext());
-        condition->data1content = CONDITION;
-    }
-    else if (!strcmp(cArg, "name"))
-    {
-        condition = parseStringCondition(checkName);
-        condition->params.caseSensitivity = SENSITIVE;
+        condition = makeStringCondition(checkName);
+        condition->params.caseSensitivity = SENSITIVE;        
     }
     else if (!strcmp(cArg, "iname"))
     {
-        condition = parseStringCondition(checkName);
+        condition = makeStringCondition(checkName);
         condition->params.caseSensitivity = INSENSITIVE;
-    }
-    else if (!strcmp(cArg, ")"))
-    {
-        err(2, "parseArgumentsNext - argument error, misguided )");
-    }
-    else
-    {
-        err(2, "parseArgumentsNext - unknown token, %s", cArg);
     }
     
     return (condition);
 }
+int tryParseAction(char * cArg, argsBundle_t * argsBundle)
+{
+    if (0)
+    {
+    
+    }
+    else
+    {
+        return (0);
+    }
+    return (1);
+}
+int tryParseOption(char * cArg, argsBundle_t * argsBundle)
+{
+    if (!strcmp(cArg, "-follow"))
+    {
+        argsBundle->linkResolution = FOLLOW;
+    }
+    else if (!strcmp(cArg, "-nofollow"))
+    {
+        argsBundle->linkResolution = NOFOLLOW;
+    }
+    else
+    {
+        return (0);
+    }
+    return (1);
+}
 
+condition_t * buildConditionNode(argsBundle_t * argsBundle)
+{
+    char * cArg;
+    condition_t * condition = NULL;
+    
+    while (position < argc)
+    {
+        cArg = argv[position];
+        position++;
+        
+        if (!strcmp(cArg, "("))
+        {
+            condition = buildConditionTree(argsBundle);
+            break;
+        }
+        else if (!strcmp(cArg, "!"))
+        {
+            condition = createConditionNode();
+            condition->process = checkNot;
+            condition->data1 = createConditionData(buildConditionNode(argsBundle));
+            condition->data1content = CONDITION;
+            break;
+        }
+        else if ((condition = tryParseCondition(cArg, argsBundle)))
+        {
+            break;
+        }
+        else if (tryParseAction(cArg, argsBundle))
+        {
+            /*  do nothing */
+        }
+        else if (tryParseOption(cArg, argsBundle))
+        {
+            /* do nothing */
+        }
+        else if (!strcmp(cArg, ")"))
+        {
+            fprintf(stderr, "buildConditionNode - ')' unexpected at this position, argument #%d\n", position-1);
+            break;
+        }
+        else
+        {
+            fprintf(stderr, "buildConditionNode - unknown token, %s", cArg);
+        }
+    }
+    return (condition);
+}
 
-condition_t * 
-parseArgumentsNextJunction()
+condition_t * buildConditionTree(argsBundle_t * argsBundle)
 {
     char * cArg = NULL;
     condition_t * condition = NULL;
@@ -283,8 +353,13 @@ parseArgumentsNextJunction()
     condition_t * conditionTemp = NULL;
     
     /* Fetch the first condition explicitly */
-    condition = parseArgumentsNext();
-        
+    condition = buildConditionNode(argsBundle);
+   
+    if (!condition)
+    {
+        return (NULL);
+    }
+    
     while (position < argc)
     {
         cArg = argv[position];
@@ -296,7 +371,13 @@ parseArgumentsNextJunction()
         }
         else if (!strcmp(cArg, "or"))
         {
-            conditionTemp = parseArgumentsNext();
+            conditionTemp = buildConditionNode(argsBundle);
+            if (!conditionTemp)
+            {
+                assert(position >= argc);
+                fprintf(stderr, "buildConditionTree - binary operator 'or' used without second operand\n");
+                break;
+            }
             
             if (!conditionBuf)
             {
@@ -304,7 +385,7 @@ parseArgumentsNextJunction()
                 conditionBuf = conditionTemp;
             }
             else
-	    {
+            {
                 /* buffer is not empty => merge the buffer with main condition
                      via 'OR' operation and refill the buffer */
                 condition = mergeConditionNodes(condition, conditionBuf, checkOr);
@@ -321,7 +402,14 @@ parseArgumentsNextJunction()
                 /* current token isn't 'AND' => condition consumed => undo */
                 position--;
             }
-            conditionTemp = parseArgumentsNext();
+            conditionTemp = buildConditionNode(argsBundle);
+            
+            if (!conditionTemp)
+            {
+                assert(position >= argc);
+                /* fprintf(stderr, "buildConditionTree - binary operator 'and' used without second operand\n"); */
+                break;
+            }
             
             if (!conditionBuf)
             {

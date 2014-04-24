@@ -3,6 +3,7 @@
 
 #include "header.h"
 
-int crawl(char * path, condition_t * condition);
+void crawl(argsBundle_t argsBundle);
+void crawl(char * path, argsBundle_t argsBundle);
 
 #endif
