@@ -292,6 +292,14 @@ int tryParseOption(char * cArg, argsBundle_t * argsBundle)
     {
         argsBundle->followLinks = 0;
     }
+    else if (!strcmp(cArg, "-ignore-hidden"))
+    {
+	argsBundle->ignoreHidden = 1;
+    }
+    else if (!strcmp(cArg, "-no-ignore-hidden"))
+    {
+	argsBundle->ignoreHidden = 0;
+    }
     else
     {
         return (0);

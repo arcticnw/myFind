@@ -32,16 +32,17 @@ nodelist_t * initializeNodeList()
 void disposeNodeList(nodelist_t * list)
 {
     node_t * cNode;
-    note_t * cNodeNext;
+    node_t * cNodeNext;
     
     if (!list)
     {
         return;
     }
     
-    for (cNode = nodes->first; cNode;)
+    for (cNode = list->first; cNode;)
     {
-        cNodeNext = cNode->next
+        cNodeNext = cNode->next;
+        free(cNode->localName);
         free(cNode);
         cNode = cNodeNext;
     }
@@ -49,23 +50,35 @@ void disposeNodeList(nodelist_t * list)
     free(list);
 }
 
-int tryAddNode(nodelist_t * list, ino_t nodeid)
+int tryAddNode(nodelist_t * list, const char * localName, const ino_t nodeid, node_t ** nodeRef)
 {
     node_t * newNode;
     node_t * cNode;
 
-    for (cNode = list->first; cNode; )
+    for (cNode = list->first; cNode; cNode = cNode->next)
     {
         if (cNode->nodeid == nodeid)
         {
+    	    *nodeRef = cNode;
             return (0);
         }
     }
     
     newNode = (node_t*)malloc(sizeof(node_t));
+    if (!newNode)
+    {
+	err(1, "tryAddNode - malloc (newNode)\n");
+    }
+    
+    *nodeRef = newNode;
     newNode->nodeid = nodeid;
     newNode->next = NULL;
-    list->count++;
+    newNode->localName = (char*)malloc(sizeof(char) * (strlen(localName) + 1));
+    if (!newNode->localName)
+    {
+	err(1, "tryAddNode - malloc (localName)\n");
+    }
+    strcpy(newNode->localName, localName);
     
     if (list->count == 0)
     {
@@ -76,6 +89,8 @@ int tryAddNode(nodelist_t * list, ino_t nodeid)
         list->last->next = newNode;
     }
     list->last = newNode;
+
+    list->count++;
     
     return (1);
 }
@@ -86,7 +101,7 @@ void crawl(const argsBundle_t argsBundle)
     
     nodes = initializeNodeList();
     
-    crawlRecursive(argsBungle.path, argsBundle, nodes);
+    crawlRecursive(argsBundle.path, argsBundle, nodes);
     
     disposeNodeList(nodes);
 }
@@ -103,6 +118,22 @@ void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t
     char isLink;               /* current file is symlink */
     file_t f_entry;            /* current file information pack */
     int result;                /* result of matching with conditions */
+    node_t * node;             /* node returned by tryAddNode */
+    
+    /* make sure we aren't in path loop */
+    if (argsBundle.followLinks)
+    {
+        if (stat(path, &dirEntryStat))
+	{
+	    fprintf(stderr, "Unable to access directory information %s: %s\n", path, strerror(errno));
+    	    return;
+	}
+        if (argsBundle.followLinks && !tryAddNode(list, path, dirEntryStat.st_ino, &node))
+	{
+	    fprintf(stderr, "File system loop detected: %s was already visited in %s\n", path, node->localName);
+            return;
+        }
+    }
     
     /* open directory */
     if (!(dir = opendir(path)))
@@ -128,7 +159,7 @@ void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t
         /* get relative path */
         localPathLength = strlen(path) + strlen(dirEntry->d_name) + 2;
         localPath = malloc(localPathLength);
-        sprintf(localPath, "%s/%s", path, dirEntry->d_name);
+        snprintf(localPath, localPathLength, "%s/%s", path, dirEntry->d_name);
         
         /* get absolute path */
         realPath = realpath(localPath, (char*)NULL);
@@ -196,14 +227,7 @@ void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t
             (subdir = opendir(localPath)))
         {
             closedir(subdir);
-            if (argsBundle.followLinks && !tryAddNode(list, dirEntryStat->st_ino))
-            {
-                fprintf(stderr, "File system loop detected: %s\n", localPath);
-            }
-            else
-            {
-                crawlRecursive(localPath, argsBundle, list);
-            }
+            crawlRecursive(localPath, argsBundle, list);
         }
             
 cleanupAndContinue: /* ask if allowed to use goto */

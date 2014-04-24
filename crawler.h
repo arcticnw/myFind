@@ -7,6 +7,7 @@
 
 struct node_p {
     ino_t nodeid;
+    char * localName;
     struct node_p * next;
 };
 typedef struct node_p node_t;
@@ -20,7 +21,7 @@ typedef struct nodelist_p nodelist_t;
 
 nodelist_t * initializeNodeList();
 void disposeNodeList(nodelist_t * list);
-int tryAddNode(nodelist_t * list, ino_t nodeid);
+int tryAddNode(nodelist_t * list, const char * localName, const ino_t nodeid, node_t ** node);
 
 void crawl(const argsBundle_t argsBundle);
 void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t * list);
