@@ -1,78 +1,76 @@
 #include <err.h>
+#include <assert.h>
+#include <strings.h>
 
 #include "header.h"
 #include "checker.h"
 
-int checkTrue(data_t *data1, data_t *data2, file_t file)
-{
-    return 1;
-}
-int checkFalse(data_t *data1, data_t *data2, file_t file)
-{
-    return 0;
-}
-
-int checkAnd(data_t *data1, data_t *data2, file_t file)
-{
-    int leftSide = 0;
-    int rightSide = 0;
-    
-    if (!data1) 
-    {
-        err(3, "checkAnd - unexpected logic - left side is NULL"); 
-    }
-    if (!data1->conditionData)
-    {
-        err(3, "checkAnd - unexpected logic - left side isn't condition");
-    }
-    leftSide = data1->conditionData->process(
-      data1->conditionData->data1, 
-      data1->conditionData->data2, file);
-      
-    if (!data2) 
-    {
-        err(3, "checkAnd - unexpected logic - right side is NULL"); 
-    }
-    if (!data2->conditionData)
-    {
-        err(3, "checkAnd - unexpected logic - right side isn't condition");
-    }
-    rightSide = data2->conditionData->process(
-      data2->conditionData->data1, 
-      data2->conditionData->data2, file);
-      
-    return (leftSide && rightSide);
-}
-int checkOr(data_t *data1, data_t *data2, file_t file)
-{
-    int leftSide = 0;
-    int rightSide = 1;
-
-    if (!data1) 
-    {
-        err(3, "checkAnd - unexpected logic - left side is NULL"); 
-    }
-    if (!data1->conditionData)
-    {
-        err(3, "checkAnd - unexpected logic - left side isn't condition");
-    }
-    leftSide = data1->conditionData->process(
-      data1->conditionData->data1, 
-      data1->conditionData->data2, file);
-      
-    if (data2) 
-    {
-        if (data2->conditionData)
-        {
-            rightSide = data2->conditionData->process(
-              data2->conditionData->data1, 
-              data2->conditionData->data2, file);
-        }
-    }
-    return (leftSide || rightSide);
-}
-
-int checkName(data_t *data1, data_t *data2, file_t file)
+int checkTrue(condition_t * condition, file_t file)
 {
     return (1);
+}
+int checkFalse(condition_t * condition, file_t file)
+{
+    return (0);
+}
+
+int check(condition_t * condition, file_t file)
+{
+    assert(condition);
+    assert(condition->process);
+
+    return (condition->process(condition, file));
+}
+
+int checkNot(condition_t * condition, file_t file)
+{
+    int result = 0;
+    
+    assert(condition);
+    assert(condition->data1content == CONDITION);
+
+    result = check(condition->data1.conditionData, file);
+    
+    return (!result);
+}
+
+int checkAnd(condition_t * condition, file_t file)
+{
+    int leftSideResult = 0;
+    int rightSideResult = 0;
+    
+    assert(condition);
+    assert(condition->data1content == CONDITION);
+    assert(condition->data2content == CONDITION);
+    
+    leftSideResult = check(condition->data1.conditionData, file);
+    rightSideResult = check(condition->data2.conditionData, file);
+      
+    return (leftSideResult && rightSideResult);
+}
+int checkOr(condition_t * condition, file_t file)
+{
+    int leftSideResult = 0;
+    int rightSideResult = 0;
+
+    assert(condition);
+    assert(condition->data1content == CONDITION);
+    assert(condition->data2content == CONDITION);
+    
+    leftSideResult = check(condition->data1.conditionData, file);
+    rightSideResult = check(condition->data2.conditionData, file);
+      
+    return (leftSideResult || rightSideResult);
+}
+
+int checkName(condition_t * condition, file_t file)
+{
+    assert(condition);
+    assert(condition->data1content == STRING);
+    
+    if (condition->params.caseSensitivity == INSENSITIVE)
+    {
+        return (!strcasecmp(data1->stringData, file.dirEntry->d_name));
+    }
+    return (!strcmp(data1->stringData, file.dirEntry->d_name));
 }

@@ -5,33 +5,55 @@
 #include <sys/stat.h>
 
 struct condition_p;
-
-typedef enum {INT, STRING, CONDITION, NONE} contents_t;
-
 union data_p {
-	char* stringData;
+	char * stringData;
 	int intData;
 	struct condition_p * conditionData;
 };
 typedef union data_p data_t;
 
+
 struct file_p {
-	struct dirent *dirEntry;
+	struct dirent * dirEntry;
     char * localPath;
     char * realPath;
-	struct stat d_entry_stat;
+	struct stat dirEntryStat;
 };
 typedef struct file_p file_t;
 
-typedef int(*processer_t) (data_t *, data_t *, file_t);
+
+typedef enum {INSENSITIVE, SENSITIVE} sensitivity_t;
+typedef enum {SMALLERTHAN, EQUALTO, GREATERTHAN} comparison_t;
+
+struct condParams_p {
+    sensitivity_t caseSensitivity;
+    comparison_t comparison;
+};
+typedef struct condParams_p condParams_t;
+
+
+typedef int(* processer_t) (struct condition_p *, file_t);
+typedef enum {INT, STRING, CONDITION, NONE} contents_t;
 
 struct condition_p {
 	processer_t process;
-	data_t * data1;
+    condParams_t params;
+
     contents_t data1content;
-	data_t * data2;
+	data_t data1;
+
     contents_t data2content;
+	data_t data2;
 };
 typedef struct condition_p condition_t;
+
+
+struct action_p
+{
+    char * executable;
+    char ** args;
+};
+typedef struct action_p action_t;
+
 
 #endif

@@ -8,15 +8,21 @@
 #include "checker.h"
 
 int position;
+int argc;
+char ** argv;
 
-condition_t *parseArgumentsToCondition(int argc, char **argv)
+condition_t *
+parseArgumentsToCondition(int pargc, char ** pargv)
 {
+    argc = pargc;
+    argv = pargv;
     position = 2;  /* position 0 = executable name; position 1 = path */
-    /*printf("Parsing from position %d to %d\n", position, argc);*/
-    return parseArgumentsNextJunction(argc, argv);
+    condition_t * condition = parseArgumentsNextJunction(argc, argv);
+    return (condition);
 }
 
-void disposeCondition(condition_t * condition)
+void 
+disposeCondition(condition_t * condition)
 {
     if (!condition) 
     {
@@ -24,98 +30,122 @@ void disposeCondition(condition_t * condition)
     }
     
     condition->process = NULL;
-    if (condition->data1)
+    
+    if (condition->data1content == STRING)
     {
-        if (condition->data1content == STRING)
-        {
-            free(condition->data1->stringData);
-        }
-        else if (condition->data1content == CONDITION)
-        {
-            disposeCondition(condition->data1->conditionData);
-        }
-        free(condition->data1);
-        condition->data1 = NULL;
-        condition->data1content = NONE;
+        free(condition->data1.stringData);
     }
-    if (condition->data2)
+    else if (condition->data1content == CONDITION)
     {
-        if (condition->data2content == STRING)
-        {
-            free(condition->data2->stringData);
-        }
-        else if (condition->data2content == CONDITION)
-        {
-            disposeCondition(condition->data2->conditionData);
-        }
-        free(condition->data2);
-        condition->data2 = NULL;
-        condition->data2content = NONE;
+        disposeCondition(condition->data1.conditionData);
+    }    
+    condition->data1content = NONE;
+
+    if (condition->data2content == STRING)
+    {
+        free(condition->data2.stringData);
     }
+    else if (condition->data2content == CONDITION)
+    {
+        disposeCondition(condition->data2.conditionData);
+    }
+    condition->data2content = NONE;
+    
+    free(condition);    
     return;
 }
 
 
 
-condition_t * createConditionNode()
+condition_t * 
+createConditionNode()
 {
     condition_t * condition = (condition_t *)malloc(sizeof(condition_t));
     if (!condition)
     {
-        return (NULL);
+        err(1, "createConditionNode - malloc(condition)");
     }
     
     condition->process = checkTrue;
-    condition->data1 = NULL;
+    condition->data1.intData = 0;
     condition->data1content = NONE;
-    condition->data2 = NULL;
+    condition->data2.intData = 0;
     condition->data2content = NONE;
     
     return (condition);
 }
 
-data_t * createStringDataNode(char * originalData)
+data_t 
+createStringDataNode(char * originalData)
 {
     int dataSize;
-    data_t * data;
+    data_t data;
     
-    dataSize = strlen(originalData);
+    dataSize = strlen(originalData) + 1;
     
-    data = (data_t *)malloc(sizeof(data_t));
-    if (!data)
-    {
-        err (1, "createStringDataNode - malloc (data)");
-    }
-    
-    data->stringData = (char *)malloc(sizeof(char) * dataSize);
-    if (!data->stringData)
+    data.stringData = (char *)malloc(sizeof(char) * dataSize);
+    if (!data.stringData)
     {
         err (1, "createStringDataNode - malloc (stringData)");
     }
-    strcpy(data->stringData, originalData);
+    strcpy(data.stringData, originalData);
+    data.stringData[dataSize-1] = '\0';
     
     return (data);
 }
 
-data_t * createConditionDataNode(condition_t * condition)
+data_t
+createIntDataNode(char * originalData, comparison_t * comparison)
 {
-    data_t * data;
+    char * parseData = originalData;
+    int value;
+    data_t data;
     
-    data = (data_t *)malloc(sizeof(data_t));
-    if (!data)
-    {
-        err (1, "createConditionDataNode - malloc (data)");
+    if (strlen(originalData) == 0)
+    { 
+        err(2, "createIntDataNode - argument error, empty string"); 
     }
     
-    data->conditionData = condition;
+    if (!strcmp(originalData[0], "+"))
+    {
+        parseData++;
+        if (comparison)
+        {
+            *comparison = GREATERTHAN;
+        }
+    }
+    else if (!strcmp(originalData[0], "-"))
+    {
+        parseData++;
+        if (comparison)
+        {
+            *comparison = SMALLERTHAN;
+        }
+    }
+    else if (comparison)
+    {
+        *comparison = EQUALTO;
+    }
+    
+    value = atoi(parseData);
+    
+    data.intData = value;
     
     return (data);
 }
 
-condition_t * mergeConditions(condition_t * condition1, condition_t * condition2, processer_t processer)
+data_t 
+createConditionDataNode(condition_t * condition)
+{
+    data.conditionData = condition;
+    
+    return (data);
+}
+
+condition_t * 
+mergeConditionNodes(condition_t * condition1, condition_t * condition2, processer_t processer)
 {
     condition_t * condition = createConditionNode();
-    /* assert(condition); / * already handled */
     condition->process = processer;
     condition->data1 = createConditionDataNode(condition1);
     condition->data1content = CONDITION;
@@ -125,45 +155,115 @@ condition_t * mergeConditions(condition_t * condition1, condition_t * condition2
     return (condition);
 }
 
-condition_t * parseArgumentsNext(int argc, char **argv)
+condition_t * 
+parseStringCondition(processer_t processer)
+{
+    if (position >= argc) 
+    { 
+        err(2, "parseStringCondition - argument error, argument missing"); 
+    }
+
+    condition = createConditionNode();
+    condition->process = processer;
+    
+    condition->data1 = createStringDataNode(argv[position]);
+    condition->data1content = STRING;
+    position++;
+
+    return (condition);
+}
+
+condition_t * 
+parseStringStringCondition(processer_t processer)
+{
+    if (position >= argc) 
+    { 
+        err(2, "parseStringStringCondition - argument error, argument missing"); 
+    }
+
+    condition = createConditionNode();
+    condition->process = processer;
+    
+    condition->data1 = createStringDataNode(argv[position]);
+    condition->data1content = STRING;
+    position++;
+    
+    condition->data2 = createStringDataNode(argv[position]);
+    condition->data2content = STRING;
+    position++;
+
+    return (condition);
+}
+
+condition_t *
+parseIntCondition(processer_t processer)
+{
+    if (position >= argc) 
+    { 
+        err(2, "parseIntCondition - argument error, argument missing"); 
+    }
+    
+    condition = createConditionNode();
+    condition->process = processer;
+    
+    condition->data1 = createIntDataNode(argv[position], &(condition->params.comparison));
+    condition->data1content = INT;
+    
+    position++;
+
+    return (condition); 
+}
+
+condition_t * 
+parseArgumentsNext()
 {
     char * cArg;
-    condition_t * condition;
+    condition_t * condition = NULL;
     
-    for (; position < argc; position++)
-    {
-        cArg = argv[position];
-        
-        if (!strcmp(cArg, "("))
-        {
-            position++;
-            return (parseArgumentsNextJunction(argc, argv));
-        }
-        else if (!strcmp(cArg, "name"))
-        {
-            position++;
-            cArg = argv[position];
-
-            condition = createConditionNode();
-            condition->process = checkName;
-            condition->data1 = createStringDataNode(cArg);
-            condition->data1content = STRING;
-            
-            position++;
-            
-            return (condition);
-        }
-        else if (!strcmp(cArg, ")"))
-        {
-            err(2, "parseArgumentsNext - argument error, misguided )");
-        }
+    if (position >= argc) 
+    { 
+        err(2, "parseArgumentsNext - argument error, argument missing"); 
     }
-    /*err(2, "parseArgumentsNext - argument error, unknown state");*/
-    return (createConditionNode());
+    
+    cArg = argv[position];
+    position++;
+    
+    if (!strcmp(cArg, "("))
+    {
+        condition = parseArgumentsNextJunction();
+    }
+    else if (!strcmp(cArg, "!"))
+    {
+        condition = createConditionNode();
+        condition->process = checkNot;
+        condition->data1 = createConditionDataNode(parseArgumentsNext());
+        condition->data1content = CONDITION;
+    }
+    else if (!strcmp(cArg, "name"))
+    {
+        condition = parseStringCondition(checkName);
+        condition->params.caseSensitivity = SENSITIVE;
+    }
+    else if (!strcmp(cArg, "iname"))
+    {
+        condition = parseStringCondition(checkName);
+        condition->params.caseSensitivity = INSENSITIVE;
+    }
+    else if (!strcmp(cArg, ")"))
+    {
+        err(2, "parseArgumentsNext - argument error, misguided )");
+    }
+    else
+    {
+        err(2, "parseArgumentsNext - unknown token, %s", cArg);
+    }
+    
+    return (condition);
 }
 
 
-condition_t * parseArgumentsNextJunction(int argc, char **argv)
+condition_t * 
+parseArgumentsNextJunction(
 {
     char * cArg = NULL;
     condition_t * condition = NULL;
@@ -171,23 +271,20 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     condition_t * conditionTemp = NULL;
     
     /* Fetch the first condition explicitly */
-    condition = parseArgumentsNext(argc, argv);
-    /* assert(condition); / * already handled */
+    condition = parseArgumentsNext();
         
-    for (; position < argc; position++)
+    while (position < argc)
     {
         cArg = argv[position];
+        position++;
+        
         if (!strcmp(cArg, ")"))
         {
-            position++;
             break;
         }
         else if (!strcmp(cArg, "or"))
         {
-            position++;
-            
-            conditionTemp = parseArgumentsNext(argc, argv);
-            /* assert(conditionTemp); / * already handled */
+            conditionTemp = parseArgumentsNext();
             
             if (!conditionBuf)
             {
@@ -198,7 +295,7 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
 	    {
                 /* buffer is not empty => merge the buffer with main condition
                      via 'OR' operation and refill the buffer */
-                condition = mergeConditions(condition, conditionBuf, checkOr);
+                condition = mergeConditionNodes(condition, conditionBuf, checkOr);
                 conditionBuf = conditionTemp;
             }
 
@@ -207,22 +304,22 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
         else
         {
             /* implicit 'AND' operation between arguments */
-            if (!strcmp(cArg, "and"))
+            if (strcmp(cArg, "and"))
             {
-                position++;
+                /* current token isn't 'AND' => condition consumed => undo */
+                position--;
             }
-            conditionTemp = parseArgumentsNext(argc, argv);
-            /* assert(conditionTemp); / * already handled */
+            conditionTemp = parseArgumentsNext();
             
             if (!conditionBuf)
             {
                 /* buffer is empty => operation 'AND' is with left node */
-                condition = mergeConditions(condition, conditionTemp, checkAnd);
+                condition = mergeConditionNodes(condition, conditionTemp, checkAnd);
             }
             else
             {
                 /* buffer is not empty => operation 'AND' is with the right node */
-                conditionBuf = mergeConditions(conditionBuf, conditionTemp, checkAnd);
+                conditionBuf = mergeConditionNodes(conditionBuf, conditionTemp, checkAnd);
             }
             
             conditionTemp = NULL;
@@ -232,7 +329,7 @@ condition_t * parseArgumentsNextJunction(int argc, char **argv)
     if (conditionBuf) 
     {
         /* buffer isn't empty => merge buffer with main condition via 'OR' operation */
-        condition = mergeConditions(condition, conditionBuf, checkOr);
+        condition = mergeConditionNodes(condition, conditionBuf, checkOr);
         conditionBuf = NULL;
     }
     
