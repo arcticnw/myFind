@@ -1,5 +1,6 @@
 #include <err.h>
 #include <assert.h>
+#include <string.h>
 #include <strings.h>
 
 #include "header.h"
@@ -70,7 +71,7 @@ int checkName(condition_t * condition, file_t file)
     
     if (condition->params.caseSensitivity == INSENSITIVE)
     {
-        return (!strcasecmp(data1->stringData, file.dirEntry->d_name));
+        return (!strcasecmp(condition->data1.stringData, file.dirEntry->d_name));
     }
-    return (!strcmp(data1->stringData, file.dirEntry->d_name));
+    return (!strcmp(condition->data1.stringData, file.dirEntry->d_name));
 }

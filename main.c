@@ -8,26 +8,20 @@
 
 void dump(condition_t *);
 
-void dumpData(data_t * data, contents_t content)
+void dumpData(data_t data, contents_t content)
 {
-    if (!data)
-    {
-        printf("#");
-        return;
-    }
-    
     if (content == STRING)
     {
-        printf("S(%s)", data->stringData);
+        printf("S(%s)", data.stringData);
     }
     else if (content == INT)
     {
-        printf("I(%d)", data->intData);
+        printf("I(%d)", data.intData);
     }
     else if (content == CONDITION)
     {
         printf("C(");
-        dump(data->conditionData);
+        dump(data.conditionData);
         printf(")");
     }
     else if (content == NONE)
@@ -76,6 +70,7 @@ int main(int argc, char ** argv)
     
     cond = parseArgumentsToCondition(argc, argv);
     dump(cond);
+    printf("\n");
     
     retV = crawl(argv[1], cond);
     

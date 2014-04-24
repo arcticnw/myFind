@@ -50,7 +50,7 @@ int crawl(char * path, condition_t * condition)
             f_entry.realPath = realPath;
             f_entry.dirEntryStat = dirEntryStat;
             
-            result = condition->process(condition->data1, condition->data2, f_entry);
+            result = condition->process(condition, f_entry);
             
             if (result)
             {

@@ -15,7 +15,7 @@ createConditionDataNode(condition_t * condition);
 data_t
 createStringDataNode(char * originalData);
 data_t
-createIntDataNode(char * originalData);
+createIntDataNode(char * originalData, comparison_t * comparison);
 
 condition_t * 
 mergeConditionNodes(condition_t * condition1, condition_t * condition2, processer_t processer);

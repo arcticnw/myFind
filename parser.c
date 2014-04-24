@@ -14,10 +14,14 @@ char ** argv;
 condition_t *
 parseArgumentsToCondition(int pargc, char ** pargv)
 {
+    condition_t * condition;
+    
     argc = pargc;
     argv = pargv;
     position = 2;  /* position 0 = executable name; position 1 = path */
-    condition_t * condition = parseArgumentsNextJunction(argc, argv);
+    
+    condition = parseArgumentsNextJunction(argc, argv);
+    
     return (condition);
 }
 
@@ -106,7 +110,7 @@ createIntDataNode(char * originalData, comparison_t * comparison)
         err(2, "createIntDataNode - argument error, empty string"); 
     }
     
-    if (!strcmp(originalData[0], "+"))
+    if (originalData[0] == '+')
     {
         parseData++;
         if (comparison)
@@ -114,7 +118,7 @@ createIntDataNode(char * originalData, comparison_t * comparison)
             *comparison = GREATERTHAN;
         }
     }
-    else if (!strcmp(originalData[0], "-"))
+    else if (originalData[0] == '-')
     {
         parseData++;
         if (comparison)
@@ -137,6 +141,8 @@ createIntDataNode(char * originalData, comparison_t * comparison)
 data_t 
 createConditionDataNode(condition_t * condition)
 {
+    data_t data;
+
     data.conditionData = condition;
     
     return (data);
@@ -158,6 +164,8 @@ mergeConditionNodes(condition_t * condition1, condition_t * condition2, processe
 condition_t * 
 parseStringCondition(processer_t processer)
 {
+    condition_t * condition;
+
     if (position >= argc) 
     { 
         err(2, "parseStringCondition - argument error, argument missing"); 
@@ -176,6 +184,8 @@ parseStringCondition(processer_t processer)
 condition_t * 
 parseStringStringCondition(processer_t processer)
 {
+    condition_t * condition;
+
     if (position >= argc) 
     { 
         err(2, "parseStringStringCondition - argument error, argument missing"); 
@@ -198,6 +208,8 @@ parseStringStringCondition(processer_t processer)
 condition_t *
 parseIntCondition(processer_t processer)
 {
+    condition_t * condition;
+
     if (position >= argc) 
     { 
         err(2, "parseIntCondition - argument error, argument missing"); 
@@ -263,7 +275,7 @@ parseArgumentsNext()
 
 
 condition_t * 
-parseArgumentsNextJunction(
+parseArgumentsNextJunction()
 {
     char * cArg = NULL;
     condition_t * condition = NULL;
