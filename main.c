@@ -57,8 +57,7 @@ void usage(char * name)
 
 int main(int argc, char ** argv)
 {
-    argsBundle_t * args;
-    int retV;
+    argsBundle_t args;
     
     printf("hello\n");
     
@@ -74,11 +73,11 @@ int main(int argc, char ** argv)
     printf("\n"); 
     */
     
-    retV = crawl(args);
+    crawl(args);
     
-    disposeArgsBundle(args);
+    disposeArgsBundle(&args);
     
     printf("bye\n");
     
-    return retV;
+    return 0;
 }

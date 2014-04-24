@@ -14,9 +14,9 @@ extern int errno;
 
 int crawl(argsBundle_t argsBundle)
 {
-    crawl(argsBundle.path, argsBundle);
+    crawlRecursive(argsBundle.path, argsBundle);
 }
-void crawl(char * path, argsBundle_t argsBundle)
+void crawlRecursive(char * path, argsBundle_t argsBundle)
 {
     DIR * dir;                 /* current directory */
     DIR * subdir;              /* subdirectory */
@@ -103,7 +103,7 @@ void crawl(char * path, argsBundle_t argsBundle)
             (subdir = opendir(localPath)))
         {
             closedir(localPath);
-            crawl(localPath, argsBundle);
+            crawlRecursive(localPath, argsBundle);
         }
         
         /* dealloc paths */

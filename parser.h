@@ -5,7 +5,7 @@
 
 argsBundle_t parseArguments(int argc, char ** argv);
 void initializeArgsBundle(argsBundle_t * argsBundle);
-void disposeArgsBundle(argsBundle_t argsBundle);
+void disposeArgsBundle(argsBundle_t * argsBundle);
 void disposeAction(action_t * action);
 void disposeCondition(condition_t * condition);
 
