@@ -3,6 +3,8 @@
 #include <string.h>
 #include <strings.h>
 #include <fnmatch.h>
+#include <stdlib.h>
+#include <ctype.h>
 
 #include "header.h"
 #include "checker.h"
@@ -75,16 +77,16 @@ int checkName(condition_t * condition, file_t file)
     
     if (condition->params.caseSensitivity == INSENSITIVE)
     {
-        fileName = (char*) malloc(sizeof(char) * strlen(file_t.dirEntry->d_name));
-        strcpy(fileName, file_t.dirEntry->d_name);
+        fileName = (char*) malloc(sizeof(char) * strlen(file.dirEntry->d_name));
+        strcpy(fileName, file.dirEntry->d_name);
         tolowerarray(fileName);
     }
     else
     {
-        fileName = file_t.dirEntry->d_name;
+        fileName = file.dirEntry->d_name;
     }
     
-    returnValue = !fnmatch(condition->data1.stringData, file.dirEntry->d_name, FNM_PATHNAME)
+    returnValue = !fnmatch(condition->data1.stringData, fileName, FNM_PATHNAME);
     
     if (condition->params.caseSensitivity == INSENSITIVE)
     {

@@ -97,7 +97,7 @@ condition_t * createConditionNode()
     condition_t * condition = (condition_t *)malloc(sizeof(condition_t));
     if (!condition)
     {
-        err(1, "createConditionNode - malloc(condition)");
+        err(1, "createConditionNode - malloc(condition)\n");
     }
     
     condition->process = checkTrue;
@@ -119,7 +119,7 @@ data_t createStringData(char * originalData)
     data.stringData = (char *)malloc(sizeof(char) * dataSize);
     if (!data.stringData)
     {
-        err (1, "createStringData - malloc (stringData)");
+        err (1, "createStringData - malloc (stringData)\n");
     }
     strcpy(data.stringData, originalData);
     data.stringData[dataSize-1] = '\0';
@@ -135,7 +135,7 @@ data_t createIntData(char * originalData, comparison_t * comparison)
     
     if (strlen(originalData) == 0)
     { 
-        err(2, "createIntData - argument error, empty string"); 
+        err(2, "createIntData - argument error, empty string\n"); 
     }
     
     if (originalData[0] == '+')
@@ -195,7 +195,7 @@ condition_t * makeStringCondition(processer_t processer)
 
     if (position >= argc) 
     { 
-        err(2, "parseStringCondition - argument error, argument missing"); 
+        err(2, "parseStringCondition - argument error, argument missing\n"); 
     }
 
     condition = createConditionNode();
@@ -214,7 +214,7 @@ condition_t * makeStringStringCondition(processer_t processer)
 
     if (position >= argc) 
     { 
-        err(2, "parseStringStringCondition - argument error, argument missing"); 
+        err(2, "parseStringStringCondition - argument error, argument missing\n"); 
     }
 
     condition = createConditionNode();
@@ -237,7 +237,7 @@ condition_t * makeIntCondition(processer_t processer)
 
     if (position >= argc) 
     { 
-        err(2, "parseIntCondition - argument error, argument missing"); 
+        err(2, "parseIntCondition - argument error, argument missing\n"); 
     }
     
     condition = createConditionNode();
@@ -254,7 +254,6 @@ condition_t * makeIntCondition(processer_t processer)
 condition_t * tryParseCondition(char * cArg, argsBundle_t * argsBundle)
 {
     condition_t * condition = NULL;
-    char * tmp;
     
     if (!strcmp(cArg, "name"))
     {
@@ -286,11 +285,11 @@ int tryParseOption(char * cArg, argsBundle_t * argsBundle)
 {
     if (!strcmp(cArg, "-follow"))
     {
-        argsBundle->linkResolution = FOLLOW;
+        argsBundle->followLinks = 1;
     }
     else if (!strcmp(cArg, "-nofollow"))
     {
-        argsBundle->linkResolution = NOFOLLOW;
+        argsBundle->followLinks = 0;
     }
     else
     {
@@ -341,7 +340,7 @@ condition_t * buildConditionNode(argsBundle_t * argsBundle)
         }
         else
         {
-            fprintf(stderr, "buildConditionNode - unknown token, %s", cArg);
+            fprintf(stderr, "buildConditionNode - unknown token, %s\n", cArg);
         }
     }
     return (condition);

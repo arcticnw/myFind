@@ -55,13 +55,11 @@ struct action_p
 };
 typedef struct action_p action_t;
 
-typedef enum {FOLLOW, NOFOLLOW} resolve_t;
-
 struct argsBundle_p {
     condition_t * condition;
     action_t * action;
     char * path;
-    resolve_t linkResolution;
+    char followLinks;
 };
 typedef struct argsBundle_p argsBundle_t;
 

@@ -12,21 +12,21 @@ void dumpData(data_t data, contents_t content)
 {
     if (content == STRING)
     {
-        printf("S(%s)", data.stringData);
+        printf("%s", data.stringData);
     }
     else if (content == INT)
     {
-        printf("I(%d)", data.intData);
+        printf("%d", data.intData);
     }
     else if (content == CONDITION)
     {
-        printf("C(");
+        printf("");
         dump(data.conditionData);
-        printf(")");
+        printf("");
     }
     else if (content == NONE)
     {
-        printf("E");
+        printf("-");
     }
     else
     {
@@ -37,14 +37,51 @@ void dump(condition_t * c)
 {
     if (!c)
     {
-        printf("#");
+        printf("#NULL#");
         return;
     }
-    printf("[");
+    if (c->process == checkOr || c->process == checkAnd)
+    {
+	printf("[");
+    }
+    else if (c->process == checkNot)
+    {
+	printf("!(");
+    }
+    else
+    {
+	printf("<F> (");
+    }    
     dumpData(c->data1, c->data1content);
-    printf("; ");
+    if (c->process == checkOr)
+    {
+	printf("] or [");
+    }
+    else if (c->process == checkAnd)
+    {
+        printf("] and [");
+    }
+    else if (c->process == checkNot)
+    {
+	printf(") /*");
+    }
+    else
+    {
+	printf(", ");
+    }
     dumpData(c->data2, c->data2content);
-    printf("]");
+    if (c->process == checkOr || c->process == checkAnd)
+    {
+	printf("]");
+    }
+    else if (c->process == checkNot)
+    {
+	printf("*/");
+    }
+    else
+    {
+	printf(")");
+    }    
 }
 
 void usage(char * name)
@@ -67,14 +104,19 @@ int main(int argc, char ** argv)
         return 0;
     }
     
-    args = parseArguments(argc, argv);
-    /*
-    dump(cond);
-    printf("\n"); 
-    */
+    printf("parse\n");
     
+    args = parseArguments(argc, argv);
+    
+    printf("condition: ");
+    dump(args.condition);
+    printf("\n"); 
+    
+    
+    printf("crawl\n");
     crawl(args);
     
+    printf("dispose\n");
     disposeArgsBundle(&args);
     
     printf("bye\n");
