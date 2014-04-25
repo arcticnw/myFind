@@ -11,13 +11,10 @@ void disposeArgsBundle(argsBundle_t * argsBundle);
 void disposeCondition(condition_t * condition);
 void disposeAction(action_t * action);
 
-void dumpData(data_t data, contents_t content);
-void dumpCondition(condition_t * condition);
-
 condition_t * createConditionNode();
 data_t createConditionData(condition_t * condition);
 data_t createStringData(const char * originalData);
-data_t createIntData(const char * originalData, signed char comparison);
+data_t createIntData(char * originalData, signed char * comparison);
 
 condition_t * mergeConditionNodes(condition_t * condition1, condition_t * condition2, checker_t doChecker);
 

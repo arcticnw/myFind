@@ -4,13 +4,14 @@
 #include "header.h"
 #include "parser.h"
 #include "crawler.h"
+#include "debug.h"
 
 void usage(char * name)
 {
     printf("Usage: %s path [options] [expression [expression [..]]]\n"
-	    "\n"
+		"\n"
 		"where [options] are\n"
-	    "-follow\n"
+		"-follow\n"
 		"-nofollow\n"
 		"-ignore-hidden\n"
 		"-noignore-hidden\n"
@@ -26,7 +27,7 @@ void usage(char * name)
 		"not\n"
 		"!\n"
 		"\n"
-	    name);
+		, name);
 }
 
 int main(int argc, char ** argv)
@@ -45,10 +46,7 @@ int main(int argc, char ** argv)
     
     args = parseArguments(argc, argv);
     
-    printf("condition: ");
-    dumpCondition(args.condition);
-    printf("\n"); 
-    
+    dumpArgsBundle(args);
     
     printf("crawl\n");
     crawl(args);

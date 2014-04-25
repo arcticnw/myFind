@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <assert.h>
 
 #include "header.h"
 #include "crawler.h"
@@ -179,7 +180,7 @@ void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t
 		/* get relative path */
 		localPathLength = strlen(path) + strlen(dirEntry->d_name) + 2;
 		localPath = malloc(localPathLength);
-		snprintf(localPath, localPathLength, "%s/%s", path, dirEntry->d_name);
+		snprintf(localPath, localPathLength, "%s%s", path, dirEntry->d_name);
 		
 		/* get absolute path */
 		realPath = realpath(localPath, (char*)NULL);
@@ -206,14 +207,14 @@ void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t
 
 		isLink = (S_ISLNK(dirEntryStat.st_mode) != 0);
 		
+		/* prepare file infomation pack */
+		f_entry.dirEntry = dirEntry;
+		f_entry.localPath = localPath;
+		f_entry.realPath = realPath;
+		f_entry.dirEntryStat = dirEntryStat;
+				
 		if (argsBundle.condition)
 		{
-			/* prepare file infomation pack */
-			f_entry.dirEntry = dirEntry;
-			f_entry.localPath = localPath;
-			f_entry.realPath = realPath;
-			f_entry.dirEntryStat = dirEntryStat;
-				
 			/* match file with find conditions */
 			result = argsBundle.condition->doCheck(argsBundle.condition, f_entry);
 		}

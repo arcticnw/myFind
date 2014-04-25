@@ -9,7 +9,7 @@
 
 void doPrint(action_t * action, file_t file)
 {
-	printf("%s\n", file->localPath);
+	printf("%s\n", file.localPath);
 }
 
 void doExecute(action_t * action, file_t file)

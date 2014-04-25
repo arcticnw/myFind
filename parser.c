@@ -120,104 +120,6 @@ void disposeAction(action_t * action)
 	}
 }
 
-
-void dumpData(data_t data, contents_t content)
-{
-	if (content == STRING)
-	{
-		printf("%s", data.stringData);
-	}
-	else if (content == INT)
-	{
-		printf("%d", data.intData);
-	}
-	else if (content == CONDITION)
-	{
-		dumpCondition(data.conditionData);
-	}
-	else if (content == NONE)
-	{
-		printf("-");
-	}
-	else
-	{
-		printf("?");
-	}
-}
-
-void dumpCondition(condition_t * c)
-{
-	if (!c)
-	{
-		printf("#NULL#");
-		return;
-	}
-	
-	if (c->doCheck == checkOr || c->doCheck == checkAnd)
-	{
-		printf("[");
-	}
-	else if (c->doCheck == checkNot)
-	{
-		printf("!(");
-	}
-	else if (c->doCheck == checkTrue)
-	{
-		printf("<True> /*")
-	}
-	else if (c->doCheck == checkFalse)
-	{
-		printf("<False> /*")
-	}
-	else
-	{
-		printf("<Fct> (");
-	}
-	
-	dumpData(c->data1, c->data1content);
-	
-	if (c->doCheck == checkOr)
-	{
-		printf("] or [");
-	}
-	else if (c->doCheck == checkAnd)
-	{
-		printf("] and [");
-	}
-	else if (c->doCheck == checkNot)
-	{
-		printf(" /*");
-	}
-	else
-	{
-		printf(", ");
-	}
-	
-	dumpData(c->data2, c->data2content);
-	
-	if (c->doCheck == checkOr || c->doCheck == checkAnd)
-	{
-		printf("]");
-	}
-	else if (c->doCheck == checkTrue)
-	{
-		printf("*/")
-	}
-	else if (c->doCheck == checkFalse)
-	{
-		printf("*/")
-	}
-	else if (c->doCheck == checkNot)
-	{
-		printf("*/)");
-	}
-	else
-	{
-		printf(")");
-	}	
-}
-
-
 condition_t * createConditionNode()
 {
 	condition_t * condition = (condition_t *)malloc(sizeof(condition_t));
@@ -252,7 +154,7 @@ data_t createStringData(const char * originalData)
 	return (data);
 }
 
-data_t createIntData(const char * originalData, signed char comparison)
+data_t createIntData(char * originalData, signed char * comparison)
 {
 	char * parseData = originalData;
 	int value;
@@ -266,16 +168,16 @@ data_t createIntData(const char * originalData, signed char comparison)
 	if (originalData[0] == '+')
 	{
 		parseData++;
-		comparison = -1;
+		*comparison = -1;
 	}
 	else if (originalData[0] == '-')
 	{
 		parseData++;
-		comparison = +1;
+		*comparison = +1;
 	}
 	else
 	{
-		comparison = 0;
+		*comparison = 0;
 	}
 	
 	value = atoi(parseData);
@@ -426,6 +328,7 @@ int tryParseAction(char * cArg, argsBundle_t * argsBundle)
 	int i;
 	int startPosition;
 	int endPosition;
+	int counter;
 	
 	if (!strcmp(cArg, "exec"))
 	{
