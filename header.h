@@ -12,7 +12,6 @@ union data_p {
 };
 typedef union data_p data_t;
 
-
 struct file_p {
 	struct dirent * dirEntry;
     char * localPath;
@@ -22,21 +21,18 @@ struct file_p {
 typedef struct file_p file_t;
 
 
-typedef enum {INSENSITIVE, SENSITIVE} sensitivity_t;
-typedef enum {SMALLERTHAN, EQUALTO, GREATERTHAN} comparison_t;
-
 struct condParams_p {
-    sensitivity_t caseSensitivity;
-    comparison_t comparison;
+    char isCaseSensitive;
+    signed char compareMethod;
 };
 typedef struct condParams_p condParams_t;
 
 
-typedef int(* processer_t) (struct condition_p *, file_t);
+typedef int(* checker_t) (struct condition_p *, file_t);
 typedef enum {INT, STRING, CONDITION, NONE} contents_t;
 
 struct condition_p {
-	processer_t process;
+	checker_t doCheck;
     condParams_t params;
 
     contents_t data1content;
@@ -47,11 +43,15 @@ struct condition_p {
 };
 typedef struct condition_p condition_t;
 
+struct action_p;
+typedef void(* processer_t) (struct action_p *, file_t);
 
 struct action_p
 {
-    char * executable;
-    char ** args;
+    processer_t doProcess;
+    int paramsCount;
+    char ** params;
+    struct action_p * next;
 };
 typedef struct action_p action_t;
 

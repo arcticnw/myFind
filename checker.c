@@ -21,11 +21,10 @@ int checkFalse(condition_t * condition, file_t file)
 int check(condition_t * condition, file_t file)
 {
     assert(condition);
-    assert(condition->process);
+    assert(condition->doCheck);
 
-    return (condition->process(condition, file));
+    return (condition->doCheck(condition, file));
 }
-
 int checkNot(condition_t * condition, file_t file)
 {
     int result = 0;
@@ -75,7 +74,7 @@ int checkName(condition_t * condition, file_t file)
     assert(condition);
     assert(condition->data1content == STRING);
     
-    if (condition->params.caseSensitivity == INSENSITIVE)
+    if (!condition->params.isCaseSensitive)
     {
         fileName = (char*) malloc(sizeof(char) * strlen(file.dirEntry->d_name));
         strcpy(fileName, file.dirEntry->d_name);
@@ -88,7 +87,7 @@ int checkName(condition_t * condition, file_t file)
     
     returnValue = !fnmatch(condition->data1.stringData, fileName, FNM_PATHNAME);
     
-    if (condition->params.caseSensitivity == INSENSITIVE)
+    if (!condition->params.isCaseSensitive)
     {
         free(fileName);
     }

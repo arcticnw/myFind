@@ -23,6 +23,8 @@ nodelist_t * initializeNodeList();
 void disposeNodeList(nodelist_t * list);
 int tryAddNode(nodelist_t * list, const char * localName, const ino_t nodeid, node_t ** node);
 
+void doActions(const argsBundle_t argsBundle, file_t file);
+
 void crawl(const argsBundle_t argsBundle);
 void crawlRecursive(const char * path, const argsBundle_t argsBundle, nodelist_t * list);
 
