@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <err.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <assert.h>
 
 #include "common.h"
 #include "action.h"
@@ -17,7 +20,6 @@ void do_execute(action_t *action, file_t file)
 {
 	pid_t child_pid;
 	pid_t wait_pid;
-	int execerr;
 	
 	child_pid = fork();
 	
@@ -28,7 +30,7 @@ void do_execute(action_t *action, file_t file)
 			break;
 		case 0:
 			/* this is child process */
-			execerr = execvp(action->params[0], action->params]);
+			execvp(action->params[0], action->params);
 			errx(127, "Failed to exec: %s", strerror(errno));
 			break;
 		default:

@@ -477,7 +477,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 		}
 		else
 		{
-			errx(1, "Argument parsing error at current_position %d: unknown token '%s'", current_position - 1, current_argument);
+			errx(1, "Argument parsing error at current_position %d: Unknown token '%s'", current_position - 1, current_argument);
 		}
 	}
 	return (condition);
@@ -545,7 +545,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			if (!condition_temp)
 			{
 				assert(current_position >= argument_count);
-				errx(1, "Argument parsing error at current_position %d: Expression expected after an 'and' operator", current_position);
+				/*errx(1, "Argument parsing error at current_position %d: Expression expected after an 'and' operator", current_position);*/
 				break;
 			}
 			
