@@ -3,6 +3,7 @@
 #include <err.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "common.h"
 
@@ -19,7 +20,7 @@ string_to_lower(char *data)
 
 
 char * 
-copy_string(char *source)
+copy_string(const char *source)
 {
 	char * target;
 	

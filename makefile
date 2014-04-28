@@ -1,8 +1,5 @@
-ifeq ($(OS), Windows_NT)
-	CC = gcc
-endif
-#CFLAGS     = -Wall -pedantic -g -std=c90
-CFLAGS     = -Wall -pedantic -g
+#CFLAGS     = -Wall -pedantic -ggdb -c90
+CFLAGS     = -Wall -pedantic -ggdb
 EXECUTABLE = main
 SOURCES    = $(wildcard ./*.c)
 OBJECTS    = $(SOURCES:.c=.o)
@@ -16,4 +13,4 @@ $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f -- $(EXECUTABLE) $(EXECUTABLE).exe $(OBJECTS)
+	rm -f -- $(EXECUTABLE) $(OBJECTS)

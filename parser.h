@@ -128,6 +128,6 @@ build_condition_tree(args_bundle_t *args_bundle);
 
 /* this function check if the argument position is within range               */
 void
-argument_range_check(char * expected)
+argument_range_check(char * expected);
 
 #endif
