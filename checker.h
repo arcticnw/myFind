@@ -3,49 +3,6 @@
 
 #include "common.h"
 
-struct condition_p;
-
-/* this structure holds data for one side of an operator/check function       */
-union data_p {
-	char *string_data;
-	int int_data;
-	struct condition_p * condition_data;
-};
-typedef union data_p data_t;
-
-
-/* this enum specifies the type of content present in the data_p              */
-typedef enum {INT, STRING, CONDITION, NONE} content_t;
-
-
-/* this structure holds additional parameters for a check function            */
-struct cond_params_p {
-    char is_case_sensitive;
-    signed char compare_method;
-};
-typedef struct cond_params_p cond_params_t;
-
-
-/* this pointer specifies operator/check function that determines             */
-/*     whether file_t satisfies target condition */
-typedef int(* chech_t) (struct condition_p *, file_t);
-
-
-/* this structure holds information about condition:                          */
-/*     the operator/check function, its parameters, and two operands          */
-struct condition_p {
-	chech_t do_check;
-    cond_params_t params;
-
-    content_t data1_content;
-	data_t data1;
-
-    content_t data2_content;
-	data_t data2;
-};
-typedef struct condition_p condition_t;
-
-
 /* this function returns 1                                                    */
 int 
 check_true(condition_t *condition, file_t file);

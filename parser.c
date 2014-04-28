@@ -182,7 +182,7 @@ data_t create_condition_data(condition_t *condition)
 }
 
 
-condition_t *merge_condition_nodes(condition_t *condition1, condition_t *condition2, chech_t checker)
+condition_t *merge_condition_nodes(condition_t *condition1, condition_t *condition2, check_t checker)
 {
 	condition_t *condition = make_empty_condition();
 	condition->do_check = checker;
@@ -212,7 +212,7 @@ condition_t *make_empty_condition()
 	return (condition);
 }
 
-condition_t *make_string_condition(chech_t checker)
+condition_t *make_string_condition(check_t checker)
 {
 	condition_t *condition;
 
@@ -231,7 +231,7 @@ condition_t *make_string_condition(chech_t checker)
 	return (condition);
 }
 
-condition_t *make_string_string_condition(chech_t checker)
+condition_t *make_string_string_condition(check_t checker)
 {
 	condition_t *condition;
 
@@ -254,7 +254,7 @@ condition_t *make_string_string_condition(chech_t checker)
 	return (condition);
 }
 
-condition_t *make_int_condition(chech_t checker)
+condition_t *make_int_condition(check_t checker)
 {
 	condition_t *condition;
 

@@ -5,16 +5,6 @@
 
 #include "common.h"
 
-/* this structure holds information about currently processed file            */
-struct file_p {
-	struct dirent * dir_entry;
-    char *local_path;
-    char *real_path;
-	struct stat dir_entry_stat;
-};
-typedef struct file_p file_t;
-
-
 /* this structure holds information about visited node ids and their relative */
 /*     paths and a pointer to next one                                        */
 struct node_p {

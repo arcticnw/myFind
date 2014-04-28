@@ -55,7 +55,7 @@ create_int_data(char *original_data, signed char *comparison);
 /*     conditions as operands and provided function as binary operator        */
 condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2, 
-    chech_t checker);
+    check_t checker);
 	
 
 /* this function initializes new empty condition                              */
@@ -66,19 +66,19 @@ make_empty_condition();
 /* this function initializes new condition using provided check-function and  */
 /*     an argument from argument list at current position as a string         */
 condition_t *
-make_string_condition(chech_t checker);
+make_string_condition(check_t checker);
 
 
 /* this function initializes new condition using provided check-function and  */
 /*     two arguments from argument list at current position as strings        */
 condition_t *
-make_string_string_condition(chech_t checker);
+make_string_string_condition(check_t checker);
 
 
 /* this function initializes new condition using provided check-function and  */
 /*     an argument from argument list at current position as an integer       */
 condition_t *
-make_int_condition(chech_t checker);
+make_int_condition(check_t checker);
 
 
 /* this function initializes new empty action structure                       */
