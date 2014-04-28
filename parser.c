@@ -221,7 +221,7 @@ condition_t *make_string_condition(check_t checker)
 
 	if (current_position >= argument_count) 
 	{ 
-		errx(1, "Argument parsing error at current_position %d: String argument missing", current_position);
+		errx(1, "Argument parsing error at current_position %d: String argument expected", current_position);
 	}
 
 	condition = make_empty_condition();
@@ -240,7 +240,7 @@ condition_t *make_string_string_condition(check_t checker)
 
 	if (current_position >= argument_count) 
 	{ 
-		errx(1, "Argument parsing error at current_position %d: String argument missing", current_position);
+		errx(1, "Argument parsing error at current_position %d: String argument expected", current_position);
 	}
 
 	condition = make_empty_condition();
@@ -263,7 +263,7 @@ condition_t *make_int_condition(check_t checker)
 
 	if (current_position >= argument_count) 
 	{ 
-		errx(1, "Argument parsing error at current_position %d: Integer argument missing", current_position);
+		errx(1, "Argument parsing error at current_position %d: Integer argument expected", current_position);
 	}
 	
 	condition = make_empty_condition();
@@ -329,7 +329,7 @@ condition_t *try_parse_condition(char *current_argument, args_bundle_t *args_bun
 		condition = make_empty_condition();
 		condition->do_check = check_true;
 	}
-	else if (!strcmp(current_argument, "false	"))
+	else if (!strcmp(current_argument, "false"))
 	{
 		condition = make_empty_condition();
 		condition->do_check = check_false;
@@ -354,21 +354,27 @@ int try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 		{
 			while (current_position >= argument_count) 
 			{ 
-				errx(1, "Argument parsing error at current_position %d: ';' missing", current_position);
+				errx(1, "Argument parsing error at current_position %d: ';' expected", current_position);
 			}
 			current_argument = argument_data[current_position];
 			current_position++;
 		}
 		/* the first cycle is comparing 'exec' to ';' => don't count that' */
 		counter--;
-		action->param_count = counter;
+		
+		if (counter == 0)
+		{
+			errx(1, "Argument parsing error at current_position %d: Name of an executable expected", current_position - 1);
+		}
+
+		action->param_count = counter;		
 		
 		if (counter)
 		{
 			endPosition = current_position;
 			current_position = startPosition;
 			
-			action->params = malloc (sizeof(char*) * counter);
+			action->params = malloc (sizeof(char*) * (counter + 1));
 			if (!action->params)
 			{
 				errx(127, "Failed to allocate memory: %s", strerror(errno));
@@ -385,6 +391,7 @@ int try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 				}
 				strcpy(action->params[i], current_argument);
 			}
+			action->params[counter] = NULL;
 			
 			current_position = endPosition;
 		}
@@ -506,7 +513,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			if (!condition_temp)
 			{
 				assert(current_position >= argument_count);
-				errx(1, "Argument parsing error at current_position %d: expression expected after 'or' operator", current_position);
+				errx(1, "Argument parsing error at current_position %d: Expression expected after an 'or' operator", current_position);
 				break;
 			}
 			
@@ -538,7 +545,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			if (!condition_temp)
 			{
 				assert(current_position >= argument_count);
-				/* fprintf(stderr, "build_condition_tree - binary operator 'and' used without second operand\n"); */
+				errx(1, "Argument parsing error at current_position %d: Expression expected after an 'and' operator", current_position);
 				break;
 			}
 			
