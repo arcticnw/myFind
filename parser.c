@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <err.h>
+#include <errno.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -20,7 +21,7 @@ args_bundle_t *parse_arguments(int argc, char **argv)
 	argument_count = argc;
 	argument_data = argv;
 	
-	args_bundle_t = initialize_args_bundle();
+	args_bundle = initialize_args_bundle();
 	
 	args_bundle->path = argument_data[1];
 	
@@ -51,6 +52,8 @@ args_bundle_t *initialize_args_bundle()
 	args_bundle->path = NULL;
 	args_bundle->condition = NULL;
 	args_bundle->action = NULL;
+	
+	return (args_bundle);
 }
 
 action_t *create_default_action()

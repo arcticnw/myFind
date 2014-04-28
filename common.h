@@ -18,6 +18,8 @@ typedef struct file_p file_t;
 
 /* ACTION RELATED STRUCTURES */
 
+struct action_p;
+
 /* this pointer specifies action action_p that will be applied on             */
 /*     file_t that pass the check test                                        */
 typedef void(* act_t) (struct action_p *, file_t);

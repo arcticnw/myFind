@@ -178,7 +178,7 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 		/* get relative path */
 		local_path_length = strlen(path) + strlen(dir_entry->d_name) + 2;
 		local_path = malloc(local_path_length);
-		snprintf(local_path, local_path_length, "%s/s", path, dir_entry->d_name);
+		snprintf(local_path, local_path_length, "%s/%s", path, dir_entry->d_name);
 		
 		/* get absolute path */
 		real_path = realpath(local_path, (char*)NULL);
