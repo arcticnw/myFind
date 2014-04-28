@@ -4,7 +4,6 @@
 #include <strings.h>
 #include <fnmatch.h>
 #include <stdlib.h>
-#include <ctype.h>
 
 #include "common.h"
 #include "checker.h"
@@ -96,8 +95,7 @@ int check_name(condition_t *condition, file_t file)
     
     if (!condition->params.is_case_sensitive)
     {
-        file_name = malloc(sizeof(char) * (strlen(file.dir_entry->d_name) + 1));
-        strcpy(file_name, file.dir_entry->d_name);
+		file_name = copy_string(file.dir_entry->d_name);
         string_to_lower(file_name);
     }
     else
@@ -113,15 +111,4 @@ int check_name(condition_t *condition, file_t file)
     }
     
     return (return_value);
-}
-
-
-
-void string_to_lower(char *data)
-{
-    int i;
-    for(i = 0; data[i] != '\0'; i++)
-    {
-        data[i] = tolower(data[i]);
-    }
 }

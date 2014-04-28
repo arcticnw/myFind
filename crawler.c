@@ -19,7 +19,7 @@ node_list_t *initialize_node_list()
 	nodes = malloc(sizeof(node_list_t));
 	if (!nodes)
 	{
-		err(1, "initialize_node_list - malloc (nodes)\n");
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	
 	nodes->count = 0;
@@ -69,19 +69,14 @@ int try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	new_node = malloc(sizeof(node_t));
 	if (!new_node)
 	{
-		err(1, "try_add_node - malloc (new_node)\n");
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	
 	/* initialize new node */
 	*nodeRef = new_node;
 	new_node->node_id = node_id;
 	new_node->next = NULL;
-	new_node->local_name = malloc(sizeof(char) * (strlen(local_name) + 1));
-	if (!new_node->local_name)
-	{
-		err(1, "try_add_node - malloc (local_name)\n");
-	}
-	strcpy(new_node->local_name, local_name);
+	new_node->local_name = copy_string(local_name);
 	
 	/* insert node to the list */
 	if (list->count == 0)

@@ -38,8 +38,4 @@ int
 check_name(condition_t *condition, file_t file);
 
 
-/* this function changes all characters in the literal to lower case          */
-void 
-string_to_lower(char *data);
-
 #endif

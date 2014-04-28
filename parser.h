@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#define	ARG_ERR_MSG "Argument parsing error at current_position %d: %s"
+#define	ARG2_ERR_MSG "Argument parsing error at current_position %d: %s: %s"
+
+
 /* this function sets defaults, checks and parses string arguments and        */
 /*     returns them in the args_bundle_t structure                            */
 args_bundle_t *
@@ -121,5 +125,9 @@ build_condition_node(args_bundle_t *args_bundle);
 condition_t *
 build_condition_tree(args_bundle_t *args_bundle);
 
+
+/* this function check if the argument position is within range               */
+void
+argument_range_check(char * expected)
 
 #endif

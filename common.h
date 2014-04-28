@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
+#define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
+
 /* FILE RELATED STRUCTURES */
 
 /* this structure holds information about currently processed file            */
@@ -93,4 +95,15 @@ struct args_bundle_p {
 };
 typedef struct args_bundle_p args_bundle_t;
 
+
+
+/* this function changes all characters in the literal to lower case          */
+void 
+string_to_lower(char *data);
+
+
+/* this function copies string from soruce to target, including allocation    */
+/*     including allocation and error handling                                */
+char *
+copy_string(const char *source);
 #endif

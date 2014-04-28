@@ -10,22 +10,23 @@
 #include "checker.h"
 #include "action.h"
 
-int current_position;
+
+int next_arg_index;
 int argument_count;
 char **argument_data;
 
-args_bundle_t *parse_arguments(int argc, char **argv)
+
+args_bundle_t *
+parse_arguments(int argc, char **argv)
 {
 	args_bundle_t *args_bundle;
 
 	argument_count = argc;
 	argument_data = argv;
+	next_arg_index = 2;
 	
 	args_bundle = initialize_args_bundle();
-	
 	args_bundle->path = argument_data[1];
-	
-	current_position = 2;
 	args_bundle->condition = build_condition_tree(args_bundle);
 	
 	if (!args_bundle->action)
@@ -39,13 +40,15 @@ args_bundle_t *parse_arguments(int argc, char **argv)
 	return (args_bundle);
 }
 
-args_bundle_t *initialize_args_bundle()
+
+args_bundle_t *
+initialize_args_bundle()
 {
 	args_bundle_t *args_bundle;
 	args_bundle = malloc(sizeof(args_bundle_t));
 	if (!args_bundle)
 	{
-		errx(127, "Failed to allocate memory: %s", strerror(errno));
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	args_bundle->follow_links = 0;
 	args_bundle->ignore_hidden = 1;
@@ -56,17 +59,19 @@ args_bundle_t *initialize_args_bundle()
 	return (args_bundle);
 }
 
-action_t *create_default_action()
+
+action_t *
+create_default_action()
 {
 	action_t *action;
-	
 	action = create_action();
 	action->do_action = do_print;
-	
 	return (action);
 }
 
-void dispose_args_bundle(args_bundle_t *args_bundle)
+
+void 
+dispose_args_bundle(args_bundle_t *args_bundle)
 {
 	if (args_bundle->condition)
 	{
@@ -80,7 +85,9 @@ void dispose_args_bundle(args_bundle_t *args_bundle)
 	free(args_bundle);
 }
 
-void dispose_condition(condition_t *condition)
+
+void 
+dispose_condition(condition_t *condition)
 {
 	assert(condition);
 	
@@ -109,7 +116,9 @@ void dispose_condition(condition_t *condition)
 	free(condition);
 }
 
-void dispose_action(action_t *action)
+
+void 
+dispose_action(action_t *action)
 {
 	int i;
 	
@@ -131,26 +140,35 @@ void dispose_action(action_t *action)
 	free(action);
 }
 
-data_t create_string_data(const char *original_data)
+
+data_t 
+create_condition_data(condition_t *condition)
 {
 	data_t data;
-	
-	data.string_data = malloc(sizeof(char) * (strlen(original_data) + 1));
-	if (!data.string_data)
-	{
-		errx(127, "Failed to allocate memory: %s", strerror(errno));
-	}
-	strcpy(data.string_data, original_data);
+	data.condition_data = condition;
 	
 	return (data);
 }
 
-data_t create_int_data(char *original_data, signed char *comparison)
+
+data_t 
+create_string_data(const char *original_data)
+{
+	data_t data;
+	data.string_data = copy_string(original_data);
+	
+	return (data);
+}
+
+
+data_t 
+create_int_data(char *original_data, signed char *comparison)
 {
 	char *parse_data = original_data;
 	int value;
 	data_t data;
 	
+	assert(original_data);
 	assert(strlen(original_data));
 	
 	if (original_data[0] == '+')
@@ -169,23 +187,14 @@ data_t create_int_data(char *original_data, signed char *comparison)
 	}
 	
 	value = atoi(parse_data);
-	
 	data.int_data = value;
 	
 	return (data);
 }
 
-data_t create_condition_data(condition_t *condition)
-{
-	data_t data;
 
-	data.condition_data = condition;
-	
-	return (data);
-}
-
-
-condition_t *merge_condition_nodes(condition_t *condition1, condition_t *condition2, check_t checker)
+condition_t *
+merge_condition_nodes(condition_t *condition1, condition_t *condition2, check_t checker)
 {
 	condition_t *condition = make_empty_condition();
 	condition->do_check = checker;
@@ -198,12 +207,13 @@ condition_t *merge_condition_nodes(condition_t *condition1, condition_t *conditi
 }
 
 
-condition_t *make_empty_condition()
+condition_t *
+make_empty_condition()
 {
 	condition_t *condition = malloc(sizeof(condition_t));
 	if (!condition)
 	{
-		errx(127, "Failed to allocate memory: %s", strerror(errno));
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	
 	condition->do_check = check_true;
@@ -215,75 +225,74 @@ condition_t *make_empty_condition()
 	return (condition);
 }
 
-condition_t *make_string_condition(check_t checker)
+
+condition_t *
+make_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	if (current_position >= argument_count) 
-	{ 
-		errx(1, "Argument parsing error at current_position %d: String argument expected", current_position);
-	}
+	argument_range_check("String argument expected");
 
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_string_data(argument_data[current_position]);
+	condition->data1 = create_string_data(argument_data[next_arg_index]);
 	condition->data1_content = STRING;
-	current_position++;
+	next_arg_index++;
 
 	return (condition);
 }
 
-condition_t *make_string_string_condition(check_t checker)
+
+condition_t *
+make_string_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	if (current_position >= argument_count) 
-	{ 
-		errx(1, "Argument parsing error at current_position %d: String argument expected", current_position);
-	}
+	argument_range_check("String argument expected");
 
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_string_data(argument_data[current_position]);
+	condition->data1 = create_string_data(argument_data[next_arg_index]);
 	condition->data1_content = STRING;
-	current_position++;
+	next_arg_index++;
 	
-	condition->data2 = create_string_data(argument_data[current_position]);
+	condition->data2 = create_string_data(argument_data[next_arg_index]);
 	condition->data2_content = STRING;
-	current_position++;
+	next_arg_index++;
 
 	return (condition);
 }
 
-condition_t *make_int_condition(check_t checker)
+
+condition_t *
+make_int_condition(check_t checker)
 {
 	condition_t *condition;
 
-	if (current_position >= argument_count) 
-	{ 
-		errx(1, "Argument parsing error at current_position %d: Integer argument expected", current_position);
-	}
+	argument_range_check("Integer argument expected");
 	
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_int_data(argument_data[current_position], &(condition->params.compare_method));
+	condition->data1 = create_int_data(argument_data[next_arg_index], &(condition->params.compare_method));
 	condition->data1_content = INT;
 	
-	current_position++;
+	next_arg_index++;
 
 	return (condition); 
 }
 
-action_t *create_action()
+
+action_t *
+create_action()
 {
 	action_t *action;
 	action = malloc(sizeof(action_t));
 	if (!action)
 	{
-		errx(127, "Failed to allocate memory: %s", strerror(errno));
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	action->do_action = NULL;
 	action->param_count = -1;
@@ -291,9 +300,12 @@ action_t *create_action()
 	action->params = NULL;
 	return (action);
 }
-void append_action(args_bundle_t *args_bundle, action_t *action)
+
+
+void 
+append_action(args_bundle_t *args_bundle, action_t *action)
 {
-	action_t *cAction;
+	action_t *current_action;
 	assert(args_bundle);
 	
 	/* if there's no action yet, append directly */
@@ -304,12 +316,19 @@ void append_action(args_bundle_t *args_bundle, action_t *action)
 	}
 	
 	/* find the last action */
-	for(cAction = args_bundle->action; cAction->next; cAction = cAction->next) ;
+	current_action = args_bundle->action;
+	while(current_action->next)
+	{
+		current_action = current_action->next;
+	}
 	
-	cAction->next = action;
+	/* append */
+	current_action->next = action;
 }
 
-condition_t *try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
+
+condition_t *
+try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 {
 	condition_t *condition = NULL;
 	
@@ -336,67 +355,68 @@ condition_t *try_parse_condition(char *current_argument, args_bundle_t *args_bun
 	}
 	return (condition);
 }
-int try_parse_action(char *current_argument, args_bundle_t *args_bundle)
+
+
+int 
+try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 {
 	action_t *action;
 	int i;
-	int startPosition;
-	int endPosition;
-	int counter;
+	int start_position;
+	int end_position;
+	int exec_args_count;
 	
 	if (!strcmp(current_argument, "exec"))
-	{
+	{ 
+		/* create action */
 		action = create_action();
 		action->do_action = do_execute;
 		
-		startPosition = current_position;
-		for (counter = 0; strcmp(current_argument, ";"); counter++)
+		/* backup argument position exec_args_count */
+		start_position = next_arg_index;
+				
+		/* count the number of subsequent arguments until ';' */
+		for (exec_args_count = 0; strcmp(current_argument, ";"); exec_args_count++)
 		{
-			while (current_position >= argument_count) 
-			{ 
-				errx(1, "Argument parsing error at current_position %d: ';' expected", current_position);
-			}
-			current_argument = argument_data[current_position];
-			current_position++;
+			argument_range_check("';' expected");
+
+			current_argument = argument_data[next_arg_index];
+			next_arg_index++;
 		}
 		/* the first cycle is comparing 'exec' to ';' => don't count that' */
-		counter--;
+		exec_args_count--;
 		
-		if (counter == 0)
+		/* make sure there is something to run */
+		if (!exec_args_count)
 		{
-			errx(1, "Argument parsing error at current_position %d: Name of an executable expected", current_position - 1);
+			errx(1, ARG_ERR_MSG, next_arg_index - 1, "String argument expected");
 		}
 
-		action->param_count = counter;		
+		action->param_count = exec_args_count;		
 		
-		if (counter)
+		/* restore argument position exec_args_count */
+		end_position = next_arg_index;
+		next_arg_index = start_position;
+		
+		/* allocate parameters */
+		action->params = malloc (sizeof(char*) * (exec_args_count + 1));
+		if (!action->params)
 		{
-			endPosition = current_position;
-			current_position = startPosition;
-			
-			action->params = malloc (sizeof(char*) * (counter + 1));
-			if (!action->params)
-			{
-				errx(127, "Failed to allocate memory: %s", strerror(errno));
-			}
-			for(i = 0; i < counter; i++)
-			{
-				current_argument = argument_data[current_position];
-				current_position++;
-				
-				action->params[i] = malloc(sizeof(char) * (strlen(current_argument) + 1));
-				if (!action->params[i])
-				{
-					errx(127, "Failed to allocate memory: %s", strerror(errno));
-				}
-				strcpy(action->params[i], current_argument);
-			}
-			action->params[counter] = NULL;
-			
-			current_position = endPosition;
+			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
 		
+		/* copy the literals */
+		for(i = 0; i < exec_args_count; i++)
+		{
+			current_argument = argument_data[next_arg_index];
+			next_arg_index++;
+			
+			action->params[i] = copy_string(current_argument);
+		}
+		action->params[exec_args_count] = NULL;
 		append_action(args_bundle, action);
+		
+		next_arg_index = end_position;
 	}
 	else if (!strcmp(current_argument, "print"))
 	{
@@ -406,11 +426,15 @@ int try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 	}
 	else
 	{
+		/* no match found => not an action */
 		return (0);
 	}
 	return (1);
 }
-int try_parse_option(char *current_argument, args_bundle_t *args_bundle)
+
+
+int 
+try_parse_option(char *current_argument, args_bundle_t *args_bundle)
 {
 	if (!strcmp(current_argument, "-follow"))
 	{
@@ -430,23 +454,26 @@ int try_parse_option(char *current_argument, args_bundle_t *args_bundle)
 	}
 	else
 	{
+		/* no match found => not an option */
 		return (0);
 	}
 	return (1);
 }
+
 
 condition_t *build_condition_node(args_bundle_t *args_bundle)
 {
 	char *current_argument;
 	condition_t *condition = NULL;
 	
-	while (current_position < argument_count)
+	while (next_arg_index < argument_count)
 	{
-		current_argument = argument_data[current_position];
-		current_position++;
+		current_argument = argument_data[next_arg_index];
+		next_arg_index++;
 		
 		if (!strcmp(current_argument, "("))
 		{
+			/* start a new eval. tree in the ( ) */
 			condition = build_condition_tree(args_bundle);
 			break;
 		}
@@ -472,16 +499,17 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 		}
 		else if (!strcmp(current_argument, ")"))
 		{
-			errx(1, "Argument parsing error at current_position %d: ')' was unexpected at this point", current_position - 1);
+			errx(1, ARG_ERR_MSG, next_arg_index - 1, "')' was unexpected at this point");
 			break;
 		}
 		else
 		{
-			errx(1, "Argument parsing error at current_position %d: Unknown token '%s'", current_position - 1, current_argument);
+			errx(1, ARG2_ERR_MSG, next_arg_index - 1, "Unknown token", current_argument);
 		}
 	}
 	return (condition);
 }
+
 
 condition_t *build_condition_tree(args_bundle_t *args_bundle)
 {
@@ -498,10 +526,10 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 		return (NULL);
 	}
 	
-	while (current_position < argument_count)
+	while (next_arg_index < argument_count)
 	{
-		current_argument = argument_data[current_position];
-		current_position++;
+		current_argument = argument_data[next_arg_index];
+		next_arg_index++;
 		
 		if (!strcmp(current_argument, ")"))
 		{
@@ -512,8 +540,8 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			condition_temp = build_condition_node(args_bundle);
 			if (!condition_temp)
 			{
-				assert(current_position >= argument_count);
-				errx(1, "Argument parsing error at current_position %d: Expression expected after an 'or' operator", current_position);
+				assert(next_arg_index >= argument_count);
+				errx(1, ARG_ERR_MSG, next_arg_index, "Expression expected after an 'or' operator");
 				break;
 			}
 			
@@ -538,14 +566,14 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			if (strcmp(current_argument, "and"))
 			{
 				/* current token isn't 'AND' => condition consumed => undo */
-				current_position--;
+				next_arg_index--;
 			}
 			condition_temp = build_condition_node(args_bundle);
 			
 			if (!condition_temp)
 			{
-				assert(current_position >= argument_count);
-				/*errx(1, "Argument parsing error at current_position %d: Expression expected after an 'and' operator", current_position);*/
+				assert(next_arg_index >= argument_count);
+				/*errx(1, "Argument parsing error at next_arg_index %d: Expression expected after an 'and' operator", next_arg_index);*/
 				break;
 			}
 			
@@ -572,4 +600,14 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 	}
 	
 	return (condition);
+}
+
+
+void
+argument_range_check(char * expected)
+{
+	if (next_arg_index >= argument_count) 
+	{
+		errx(1, ARG_ERR_MSG, next_arg_index, expected);
+	}
 }
