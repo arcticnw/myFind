@@ -4,110 +4,118 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "header.h"
+#include "common.h"
 #include "parser.h"
 #include "checker.h"
 #include "action.h"
 
-int position;
-int argc;
-char ** argv;
+int current_position;
+int argument_count;
+char **argument_data;
 
-argsBundle_t parseArguments(int pargc, char ** pargv)
+args_bundle_t *parse_arguments(int argc, char **argv)
 {
-	argsBundle_t argsBundle;
+	args_bundle_t *args_bundle;
 
-	argc = pargc;
-	argv = pargv;
+	argument_count = argc;
+	argument_data = argv;
 	
-	initializeArgsBundle(&argsBundle);
+	args_bundle_t = initialize_args_bundle();
 	
-	argsBundle.path = argv[1];
+	args_bundle->path = argument_data[1];
 	
-	position = 2;
-	argsBundle.condition = buildConditionTree(&argsBundle);
+	current_position = 2;
+	args_bundle->condition = build_condition_tree(args_bundle);
 	
-	if (!argsBundle.action)
+	if (!args_bundle->action)
 	{
-		appendAction(&argsBundle, createDefaultAction());
+		append_action(args_bundle, create_default_action());
 	}
 	
-	argc = 0;
-	argv = NULL;
+	argument_count = 0;
+	argument_data = NULL;
 	
-	return (argsBundle);
+	return (args_bundle);
 }
 
-void initializeArgsBundle(argsBundle_t * argsBundle)
+args_bundle_t *initialize_args_bundle()
 {
-	argsBundle->followLinks = 0;
-	argsBundle->ignoreHidden = 1;
-	argsBundle->path = NULL;
-	argsBundle->condition = NULL;
-	argsBundle->action = NULL;
+	args_bundle_t *args_bundle;
+	args_bundle = malloc(sizeof(args_bundle_t));
+	if (!args_bundle)
+	{
+		errx(127, "Failed to allocate memory: %s", strerror(errno));
+	}
+	args_bundle->follow_links = 0;
+	args_bundle->ignore_hidden = 1;
+	args_bundle->path = NULL;
+	args_bundle->condition = NULL;
+	args_bundle->action = NULL;
 }
 
-action_t * createDefaultAction()
+action_t *create_default_action()
 {
-	action_t * action;
+	action_t *action;
 	
-	action = createAction();
-	action->doProcess = doPrint;
+	action = create_action();
+	action->do_action = do_print;
 	
 	return (action);
 }
 
-void disposeArgsBundle(argsBundle_t * argsBundle)
+void dispose_args_bundle(args_bundle_t *args_bundle)
 {
-	if (argsBundle->condition)
+	if (args_bundle->condition)
 	{
-		disposeCondition(argsBundle->condition);
-		free(argsBundle->condition);
+		dispose_condition(args_bundle->condition);
 	}
-	if (argsBundle->action)
+	if (args_bundle->action)
 	{
-		disposeAction(argsBundle->action);
-		free(argsBundle->action);
+		dispose_action(args_bundle->action);
 	}
 	
-	initializeArgsBundle(argsBundle);
+	free(args_bundle);
 }
 
-void disposeCondition(condition_t * condition)
+void dispose_condition(condition_t *condition)
 {
-	condition->doCheck = NULL;
+	assert(condition);
 	
-	if (condition->data1content == STRING)
+	condition->do_check = NULL;
+	
+	if (condition->data1_content == STRING)
 	{
-		free(condition->data1.stringData);
+		free(condition->data1.string_data);
 	}
-	else if (condition->data1content == CONDITION)
+	else if (condition->data1_content == CONDITION)
 	{
-		disposeCondition(condition->data1.conditionData);
-		free(condition->data1.conditionData);
+		dispose_condition(condition->data1.condition_data);
 	}	
-	condition->data1content = NONE;
+	condition->data1_content = NONE;
 
-	if (condition->data2content == STRING)
+	if (condition->data2_content == STRING)
 	{
-		free(condition->data2.stringData);
+		free(condition->data2.string_data);
 	}
-	else if (condition->data2content == CONDITION)
+	else if (condition->data2_content == CONDITION)
 	{
-		disposeCondition(condition->data2.conditionData);
-		free(condition->data2.conditionData);
+		dispose_condition(condition->data2.condition_data);
 	}
-	condition->data2content = NONE;
+	condition->data2_content = NONE;
+	
+	free(condition);
 }
 
-void disposeAction(action_t * action)
+void dispose_action(action_t *action)
 {
 	int i;
 	
-	action->doProcess = NULL;
+	assert(action);
+	
+	action->do_action = NULL;
 	if (action->params)
 	{
-		for(i = 0; i < action->paramsCount; i++)
+		for(i = 0; i < action->param_count; i++)
 		{
 			free(action->params[i]);
 		}
@@ -115,64 +123,41 @@ void disposeAction(action_t * action)
 	}
 	if (action->next)
 	{
-		disposeAction(action->next);
-		free(action->next);
+		dispose_action(action->next);
 	}
+	free(action);
 }
 
-condition_t * createConditionNode()
+data_t create_string_data(const char *original_data)
 {
-	condition_t * condition = (condition_t *)malloc(sizeof(condition_t));
-	if (!condition)
-	{
-		err(1, "createConditionNode - malloc(condition)\n");
-	}
-	
-	condition->doCheck = checkTrue;
-	condition->data1.intData = 0;
-	condition->data1content = NONE;
-	condition->data2.intData = 0;
-	condition->data2content = NONE;
-	
-	return (condition);
-}
-
-data_t createStringData(const char * originalData)
-{
-	int dataSize;
 	data_t data;
 	
-	dataSize = strlen(originalData) + 1;
-	
-	data.stringData = (char *)malloc(sizeof(char) * dataSize);
-	if (!data.stringData)
+	data.string_data = malloc(sizeof(char) * (strlen(original_data) + 1));
+	if (!data.string_data)
 	{
-		err (1, "createStringData - malloc (stringData)\n");
+		errx(127, "Failed to allocate memory: %s", strerror(errno));
 	}
-	strcpy(data.stringData, originalData);
+	strcpy(data.string_data, original_data);
 	
 	return (data);
 }
 
-data_t createIntData(char * originalData, signed char * comparison)
+data_t create_int_data(char *original_data, signed char *comparison)
 {
-	char * parseData = originalData;
+	char *parse_data = original_data;
 	int value;
 	data_t data;
 	
-	if (strlen(originalData) == 0)
-	{ 
-		err(2, "createIntData - argument error, empty string\n"); 
-	}
+	assert(strlen(original_data));
 	
-	if (originalData[0] == '+')
+	if (original_data[0] == '+')
 	{
-		parseData++;
+		parse_data++;
 		*comparison = -1;
 	}
-	else if (originalData[0] == '-')
+	else if (original_data[0] == '-')
 	{
-		parseData++;
+		parse_data++;
 		*comparison = +1;
 	}
 	else
@@ -180,208 +165,234 @@ data_t createIntData(char * originalData, signed char * comparison)
 		*comparison = 0;
 	}
 	
-	value = atoi(parseData);
+	value = atoi(parse_data);
 	
-	data.intData = value;
+	data.int_data = value;
 	
 	return (data);
 }
 
-data_t createConditionData(condition_t * condition)
+data_t create_condition_data(condition_t *condition)
 {
 	data_t data;
 
-	data.conditionData = condition;
+	data.condition_data = condition;
 	
 	return (data);
 }
 
 
-condition_t * mergeConditionNodes(condition_t * condition1, condition_t * condition2, checker_t doChecker)
+condition_t *merge_condition_nodes(condition_t *condition1, condition_t *condition2, chech_t checker)
 {
-	condition_t * condition = createConditionNode();
-	condition->doCheck = doChecker;
-	condition->data1 = createConditionData(condition1);
-	condition->data1content = CONDITION;
-	condition->data2 = createConditionData(condition2);
-	condition->data2content = CONDITION;
+	condition_t *condition = make_empty_condition();
+	condition->do_check = checker;
+	condition->data1 = create_condition_data(condition1);
+	condition->data1_content = CONDITION;
+	condition->data2 = create_condition_data(condition2);
+	condition->data2_content = CONDITION;
 	
 	return (condition);
 }
 
 
-condition_t * makeStringCondition(checker_t checker)
+condition_t *make_empty_condition()
 {
-	condition_t * condition;
+	condition_t *condition = malloc(sizeof(condition_t));
+	if (!condition)
+	{
+		errx(127, "Failed to allocate memory: %s", strerror(errno));
+	}
+	
+	condition->do_check = check_true;
+	condition->data1.int_data = 0;
+	condition->data1_content = NONE;
+	condition->data2.int_data = 0;
+	condition->data2_content = NONE;
+	
+	return (condition);
+}
 
-	if (position >= argc) 
+condition_t *make_string_condition(chech_t checker)
+{
+	condition_t *condition;
+
+	if (current_position >= argument_count) 
 	{ 
-		err(2, "parseStringCondition - argument error, argument missing\n"); 
+		errx(1, "Argument parsing error at current_position %d: String argument missing", current_position);
 	}
 
-	condition = createConditionNode();
-	condition->doCheck = checker;
+	condition = make_empty_condition();
+	condition->do_check = checker;
 	
-	condition->data1 = createStringData(argv[position]);
-	condition->data1content = STRING;
-	position++;
+	condition->data1 = create_string_data(argument_data[current_position]);
+	condition->data1_content = STRING;
+	current_position++;
 
 	return (condition);
 }
 
-condition_t * makeStringStringCondition(checker_t checker)
+condition_t *make_string_string_condition(chech_t checker)
 {
-	condition_t * condition;
+	condition_t *condition;
 
-	if (position >= argc) 
+	if (current_position >= argument_count) 
 	{ 
-		err(2, "parseStringStringCondition - argument error, argument missing\n"); 
+		errx(1, "Argument parsing error at current_position %d: String argument missing", current_position);
 	}
 
-	condition = createConditionNode();
-	condition->doCheck = checker;
+	condition = make_empty_condition();
+	condition->do_check = checker;
 	
-	condition->data1 = createStringData(argv[position]);
-	condition->data1content = STRING;
-	position++;
+	condition->data1 = create_string_data(argument_data[current_position]);
+	condition->data1_content = STRING;
+	current_position++;
 	
-	condition->data2 = createStringData(argv[position]);
-	condition->data2content = STRING;
-	position++;
+	condition->data2 = create_string_data(argument_data[current_position]);
+	condition->data2_content = STRING;
+	current_position++;
 
 	return (condition);
 }
 
-condition_t * makeIntCondition(checker_t checker)
+condition_t *make_int_condition(chech_t checker)
 {
-	condition_t * condition;
+	condition_t *condition;
 
-	if (position >= argc) 
+	if (current_position >= argument_count) 
 	{ 
-		err(2, "parseIntCondition - argument error, argument missing\n"); 
+		errx(1, "Argument parsing error at current_position %d: Integer argument missing", current_position);
 	}
 	
-	condition = createConditionNode();
-	condition->doCheck = checker;
+	condition = make_empty_condition();
+	condition->do_check = checker;
 	
-	condition->data1 = createIntData(argv[position], &(condition->params.compareMethod));
-	condition->data1content = INT;
+	condition->data1 = create_int_data(argument_data[current_position], &(condition->params.compare_method));
+	condition->data1_content = INT;
 	
-	position++;
+	current_position++;
 
 	return (condition); 
 }
 
-action_t * createAction()
+action_t *create_action()
 {
-	action_t * action;
-	action = (action_t*)malloc(sizeof(action_t));
+	action_t *action;
+	action = malloc(sizeof(action_t));
 	if (!action)
 	{
-		err(1, "createAction - malloc(action)\n");
+		errx(127, "Failed to allocate memory: %s", strerror(errno));
 	}
-	action->doProcess = NULL;
-	action->paramsCount = -1;
+	action->do_action = NULL;
+	action->param_count = -1;
 	action->next = NULL;
 	action->params = NULL;
 	return (action);
 }
-void appendAction(argsBundle_t * argsBundle, action_t * action)
+void append_action(args_bundle_t *args_bundle, action_t *action)
 {
-	action_t * cAction;
-	assert(argsBundle);
+	action_t *cAction;
+	assert(args_bundle);
 	
 	/* if there's no action yet, append directly */
-	if (!argsBundle->action)
+	if (!args_bundle->action)
 	{
-		argsBundle->action = action;
+		args_bundle->action = action;
 		return;
 	}
 	
 	/* find the last action */
-	for(cAction = argsBundle->action; cAction->next; cAction = cAction->next) ;
+	for(cAction = args_bundle->action; cAction->next; cAction = cAction->next) ;
 	
 	cAction->next = action;
 }
 
-condition_t * tryParseCondition(char * cArg, argsBundle_t * argsBundle)
+condition_t *try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 {
-	condition_t * condition = NULL;
+	condition_t *condition = NULL;
 	
-	if (!strcmp(cArg, "name"))
+	if (!strcmp(current_argument, "name"))
 	{
-		condition = makeStringCondition(checkName);
-		condition->params.isCaseSensitive = 1;		
+		condition = make_string_condition(check_name);
+		condition->params.is_case_sensitive = 1;		
 	}
-	else if (!strcmp(cArg, "iname"))
+	else if (!strcmp(current_argument, "iname"))
 	{
-		condition = makeStringCondition(checkName);
-		tolowerarray(condition->data1.stringData);
-		condition->params.isCaseSensitive = 0;
+		condition = make_string_condition(check_name);
+		string_to_lower(condition->data1.string_data);
+		condition->params.is_case_sensitive = 0;
 	}
-	
+	else if (!strcmp(current_argument, "true"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_true;
+	}
+	else if (!strcmp(current_argument, "false	"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_false;
+	}
 	return (condition);
 }
-int tryParseAction(char * cArg, argsBundle_t * argsBundle)
+int try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 {
-	action_t * action;
+	action_t *action;
 	int i;
 	int startPosition;
 	int endPosition;
 	int counter;
 	
-	if (!strcmp(cArg, "exec"))
+	if (!strcmp(current_argument, "exec"))
 	{
-		action = createAction();
-		action->doProcess = doExecute;
+		action = create_action();
+		action->do_action = do_execute;
 		
-		startPosition = position;
-		for (counter = 0; strcmp(cArg, ";"); counter++)
+		startPosition = current_position;
+		for (counter = 0; strcmp(current_argument, ";"); counter++)
 		{
-			while (position >= argc) 
+			while (current_position >= argument_count) 
 			{ 
-				err(2, "tryParseAction - argument error, ';' missing\n");
+				errx(1, "Argument parsing error at current_position %d: ';' missing", current_position);
 			}
-			cArg = argv[position];
-			position++;
+			current_argument = argument_data[current_position];
+			current_position++;
 		}
 		/* the first cycle is comparing 'exec' to ';' => don't count that' */
 		counter--;
-		action->paramsCount = counter;
+		action->param_count = counter;
 		
 		if (counter)
 		{
-			endPosition = position;
-			position = startPosition;
+			endPosition = current_position;
+			current_position = startPosition;
 			
-			action->params = (char **) malloc (sizeof(char*) * counter);
+			action->params = malloc (sizeof(char*) * counter);
 			if (!action->params)
 			{
-				err(1, "tryParseAction - malloc(params)\n");
+				errx(127, "Failed to allocate memory: %s", strerror(errno));
 			}
 			for(i = 0; i < counter; i++)
 			{
-				cArg = argv[position];
-				position++;
+				current_argument = argument_data[current_position];
+				current_position++;
 				
-				action->params[i] = (char *)malloc(sizeof(char) * (strlen(cArg) + 1));
+				action->params[i] = malloc(sizeof(char) * (strlen(current_argument) + 1));
 				if (!action->params[i])
 				{
-					err (1, "tryParseAction - malloc (params[i])\n");
+					errx(127, "Failed to allocate memory: %s", strerror(errno));
 				}
-				strcpy(action->params[i], cArg);
+				strcpy(action->params[i], current_argument);
 			}
 			
-			position = endPosition;
+			current_position = endPosition;
 		}
 		
-		appendAction(argsBundle, action);
+		append_action(args_bundle, action);
 	}
-	else if (!strcmp(cArg, "print"))
+	else if (!strcmp(current_argument, "print"))
 	{
-		action = createAction();
-		action->doProcess = doPrint;
-		appendAction(argsBundle, action);
+		action = create_action();
+		action->do_action = do_print;
+		append_action(args_bundle, action);
 	}
 	else
 	{
@@ -389,23 +400,23 @@ int tryParseAction(char * cArg, argsBundle_t * argsBundle)
 	}
 	return (1);
 }
-int tryParseOption(char * cArg, argsBundle_t * argsBundle)
+int try_parse_option(char *current_argument, args_bundle_t *args_bundle)
 {
-	if (!strcmp(cArg, "-follow"))
+	if (!strcmp(current_argument, "-follow"))
 	{
-		argsBundle->followLinks = 1;
+		args_bundle->follow_links = 1;
 	}
-	else if (!strcmp(cArg, "-nofollow"))
+	else if (!strcmp(current_argument, "-nofollow"))
 	{
-		argsBundle->followLinks = 0;
+		args_bundle->follow_links = 0;
 	}
-	else if (!strcmp(cArg, "-ignore-hidden"))
+	else if (!strcmp(current_argument, "-ignore-hidden"))
 	{
-		argsBundle->ignoreHidden = 1;
+		args_bundle->ignore_hidden = 1;
 	}
-	else if (!strcmp(cArg, "-noignore-hidden"))
+	else if (!strcmp(current_argument, "-noignore-hidden"))
 	{
-		argsBundle->ignoreHidden = 0;
+		args_bundle->ignore_hidden = 0;
 	}
 	else
 	{
@@ -414,140 +425,140 @@ int tryParseOption(char * cArg, argsBundle_t * argsBundle)
 	return (1);
 }
 
-condition_t * buildConditionNode(argsBundle_t * argsBundle)
+condition_t *build_condition_node(args_bundle_t *args_bundle)
 {
-	char * cArg;
-	condition_t * condition = NULL;
+	char *current_argument;
+	condition_t *condition = NULL;
 	
-	while (position < argc)
+	while (current_position < argument_count)
 	{
-		cArg = argv[position];
-		position++;
+		current_argument = argument_data[current_position];
+		current_position++;
 		
-		if (!strcmp(cArg, "("))
+		if (!strcmp(current_argument, "("))
 		{
-			condition = buildConditionTree(argsBundle);
+			condition = build_condition_tree(args_bundle);
 			break;
 		}
-		else if (!strcmp(cArg, "!") || !(strcmp(cArg, "not")))
+		else if (!strcmp(current_argument, "!") || !strcmp(current_argument, "not"))
 		{
-			condition = createConditionNode();
-			condition->doCheck = checkNot;
-			condition->data1 = createConditionData(buildConditionNode(argsBundle));
-			condition->data1content = CONDITION;
+			condition = make_empty_condition();
+			condition->do_check = check_not;
+			condition->data1 = create_condition_data(build_condition_node(args_bundle));
+			condition->data1_content = CONDITION;
 			break;
 		}
-		else if ((condition = tryParseCondition(cArg, argsBundle)))
+		else if ((condition = try_parse_condition(current_argument, args_bundle)))
 		{
 			break;
 		}
-		else if (tryParseAction(cArg, argsBundle))
+		else if (try_parse_action(current_argument, args_bundle))
 		{
 			/* do nothing */
 		}
-		else if (tryParseOption(cArg, argsBundle))
+		else if (try_parse_option(current_argument, args_bundle))
 		{
 			/* do nothing */
 		}
-		else if (!strcmp(cArg, ")"))
+		else if (!strcmp(current_argument, ")"))
 		{
-			fprintf(stderr, "buildConditionNode - ')' unexpected at this position, argument #%d\n", position-1);
+			errx(1, "Argument parsing error at current_position %d: ')' was unexpected at this point", current_position - 1);
 			break;
 		}
 		else
 		{
-			fprintf(stderr, "buildConditionNode - unknown token, %s\n", cArg);
+			errx(1, "Argument parsing error at current_position %d: unknown token '%s'", current_position - 1, current_argument);
 		}
 	}
 	return (condition);
 }
 
-condition_t * buildConditionTree(argsBundle_t * argsBundle)
+condition_t *build_condition_tree(args_bundle_t *args_bundle)
 {
-	char * cArg = NULL;
-	condition_t * condition = NULL;
-	condition_t * conditionBuf = NULL;
-	condition_t * conditionTemp = NULL;
+	char *current_argument = NULL;
+	condition_t *condition = NULL;
+	condition_t *condition_buffer = NULL;
+	condition_t *condition_temp = NULL;
 	
 	/* Fetch the first condition explicitly */
-	condition = buildConditionNode(argsBundle);
+	condition = build_condition_node(args_bundle);
    
 	if (!condition)
 	{
 		return (NULL);
 	}
 	
-	while (position < argc)
+	while (current_position < argument_count)
 	{
-		cArg = argv[position];
-		position++;
+		current_argument = argument_data[current_position];
+		current_position++;
 		
-		if (!strcmp(cArg, ")"))
+		if (!strcmp(current_argument, ")"))
 		{
 			break;
 		}
-		else if (!strcmp(cArg, "or"))
+		else if (!strcmp(current_argument, "or"))
 		{
-			conditionTemp = buildConditionNode(argsBundle);
-			if (!conditionTemp)
+			condition_temp = build_condition_node(args_bundle);
+			if (!condition_temp)
 			{
-				assert(position >= argc);
-				fprintf(stderr, "buildConditionTree - binary operator 'or' used without second operand\n");
+				assert(current_position >= argument_count);
+				errx(1, "Argument parsing error at current_position %d: expression expected after 'or' operator", current_position);
 				break;
 			}
 			
-			if (!conditionBuf)
+			if (!condition_buffer)
 			{
 				/* buffer is empty => fill the buffer */
-				conditionBuf = conditionTemp;
+				condition_buffer = condition_temp;
 			}
 			else
 			{
 				/* buffer is not empty => merge the buffer with main condition
 					 via 'OR' operation and refill the buffer */
-				condition = mergeConditionNodes(condition, conditionBuf, checkOr);
-				conditionBuf = conditionTemp;
+				condition = merge_condition_nodes(condition, condition_buffer, check_or);
+				condition_buffer = condition_temp;
 			}
 
-			conditionTemp = NULL;
+			condition_temp = NULL;
 		}
 		else
 		{
 			/* implicit 'AND' operation between arguments */
-			if (strcmp(cArg, "and"))
+			if (strcmp(current_argument, "and"))
 			{
 				/* current token isn't 'AND' => condition consumed => undo */
-				position--;
+				current_position--;
 			}
-			conditionTemp = buildConditionNode(argsBundle);
+			condition_temp = build_condition_node(args_bundle);
 			
-			if (!conditionTemp)
+			if (!condition_temp)
 			{
-				assert(position >= argc);
-				/* fprintf(stderr, "buildConditionTree - binary operator 'and' used without second operand\n"); */
+				assert(current_position >= argument_count);
+				/* fprintf(stderr, "build_condition_tree - binary operator 'and' used without second operand\n"); */
 				break;
 			}
 			
-			if (!conditionBuf)
+			if (!condition_buffer)
 			{
 				/* buffer is empty => operation 'AND' is with left node */
-				condition = mergeConditionNodes(condition, conditionTemp, checkAnd);
+				condition = merge_condition_nodes(condition, condition_temp, check_and);
 			}
 			else
 			{
 				/* buffer is not empty => operation 'AND' is with the right node */
-				conditionBuf = mergeConditionNodes(conditionBuf, conditionTemp, checkAnd);
+				condition_buffer = merge_condition_nodes(condition_buffer, condition_temp, check_and);
 			}
 			
-			conditionTemp = NULL;
+			condition_temp = NULL;
 		}
 	}
 	
-	if (conditionBuf) 
+	if (condition_buffer) 
 	{
 		/* buffer isn't empty => merge buffer with main condition via 'OR' operation */
-		condition = mergeConditionNodes(condition, conditionBuf, checkOr);
-		conditionBuf = NULL;
+		condition = merge_condition_nodes(condition, condition_buffer, check_or);
+		condition_buffer = NULL;
 	}
 	
 	return (condition);

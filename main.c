@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "header.h"
+#include "common.h"
 #include "parser.h"
 #include "crawler.h"
 #include "debug.h"
 
-void usage(char * name)
+void usage(char *name)
 {
     printf("Usage: %s path [options] [expression [expression [..]]]\n"
 		"\n"
@@ -26,13 +26,13 @@ void usage(char * name)
 		")\n"
 		"not\n"
 		"!\n"
-		"\n"
-		, name);
+		"\n",
+		name);
 }
 
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
-    argsBundle_t args;
+    args_bundle_t *args_bundle;
     
     printf("hello\n");
     
@@ -44,15 +44,15 @@ int main(int argc, char ** argv)
     
     printf("parse\n");
     
-    args = parseArguments(argc, argv);
+    args_bundle = parse_arguments(argc, argv);
     
-    dumpArgsBundle(args);
+    dumpArgsBundle(args_bundle);
     
     printf("crawl\n");
-    crawl(args);
+    crawl(args_bundle);
     
     printf("dispose\n");
-    disposeArgsBundle(&args);
+    dispose_args_bundle(args_bundle);
     
     printf("bye\n");
     

@@ -4,15 +4,15 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "header.h"
+#include "common.h"
 #include "action.h"
 
-void doPrint(action_t * action, file_t file)
+void do_print(action_t *action, file_t file)
 {
-	printf("%s\n", file.localPath);
+	printf("%s\n", file.local_path);
 }
 
-void doExecute(action_t * action, file_t file)
+void do_execute(action_t *action, file_t file)
 {
 
 }
