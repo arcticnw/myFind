@@ -8,6 +8,12 @@
 #define	ARG2_ERR_MSG ARG_ERR_MSG "%s: %s"
 #define	ARG2_FILE_ERR_MSG ARG_ERR_MSG "Unable to access file %s: %s"
 
+#define EXPR_EXPECTED "Expression expected"
+#define INT_EXPECTED "Integer argument expected"
+#define STR_EXPECTED "String argument expected"
+#define SEMICOL_EXPECTED "';' expected at the end of 'exec' argument list"
+#define UNKNOWN_TOKEN "Unknown token"
+#define PARENTH_UNEXPECTED "')' unexpected at this point"
 
 /* this function sets defaults, checks and parses string arguments and        */
 /*     returns them in the args_bundle_t structure                            */
@@ -96,7 +102,7 @@ create_action();
 /*     if no such list exists in args_bundle_t, then the action is used as    */
 /**    a head of the list                                                     */
 void 
-append_action(args_bundle_t *args_bundle, action_t *action);
+append_action(action_t *action);
 
 
 /**/
@@ -107,19 +113,19 @@ retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle);
 /* this function tries to make and return a condition from provided literal,  */
 /*     if no such condition is made, NULL is returned                         */
 condition_t *
-try_parse_condition(char *current_argument, args_bundle_t *args_bundle);
+try_parse_condition(args_bundle_t *args_bundle);
 
 
 /* this function tries to make an action from provided literal which is then  */
 /*     added to the args_bundle_t, if no such action is made, 0 is returned   */
 int 
-try_parse_action(char *current_argument, args_bundle_t *args_bundle);
+try_parse_action(args_bundle_t *args_bundle);
 
 
 /* this function tries to make an option from provided literal which is then  */
 /*     used in the args_bundle_t, if no such option is made, 0 is returned    */
 int 
-try_parse_option(char *current_argument, args_bundle_t *args_bundle);
+try_parse_option(args_bundle_t *args_bundle);
 
 
 /* this function makes a node of a condition tree from the current position   */
@@ -135,6 +141,6 @@ build_condition_tree(args_bundle_t *args_bundle);
 
 /* this function check if the argument position is within range               */
 void
-argument_range_check(char * expected);
+increment_current_argument(char * expected);
 
 #endif

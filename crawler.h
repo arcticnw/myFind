@@ -64,6 +64,6 @@ crawl(const args_bundle_t *args_bundle);
 /* this function starts a recursive search at given path, with given list of  */
 /*     passed node_ids and given arguments                                    */
 void 
-crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_list_t *list);
+crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth, node_list_t *list);
 
 #endif

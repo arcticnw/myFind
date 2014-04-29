@@ -94,6 +94,8 @@ struct args_bundle_p {
     action_t *action;
     char follow_links;
     char ignore_hidden;
+	int min_depth;
+	int max_depth;
 	time_t time_now;
 };
 typedef struct args_bundle_p args_bundle_t;

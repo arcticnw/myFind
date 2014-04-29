@@ -15,10 +15,10 @@
 #include "action.h"
 
 
-int next_arg_index;
 int argument_count;
 char **argument_data;
-
+int next_arg_index;
+char *current_argument;
 
 args_bundle_t *
 parse_arguments(int argc, char **argv)
@@ -56,6 +56,8 @@ initialize_args_bundle()
 	}
 	args_bundle->follow_links = 0;
 	args_bundle->ignore_hidden = 1;
+	args_bundle->min_depth = -1;
+	args_bundle->max_depth = -1;
 	time(&(args_bundle->time_now));
 	args_bundle->path = NULL;
 	args_bundle->condition = NULL;
@@ -236,14 +238,12 @@ make_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	argument_range_check("String argument expected");
-
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_string_data(argument_data[next_arg_index]);
+	increment_current_argument(STR_EXPECTED);
+	condition->data1 = create_string_data(current_argument);
 	condition->data1_content = STRING;
-	next_arg_index++;
 
 	return (condition);
 }
@@ -254,18 +254,16 @@ make_string_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	argument_range_check("String argument expected");
-
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_string_data(argument_data[next_arg_index]);
+	increment_current_argument(STR_EXPECTED);
+	condition->data1 = create_string_data(current_argument);
 	condition->data1_content = STRING;
-	next_arg_index++;
 	
-	condition->data2 = create_string_data(argument_data[next_arg_index]);
+	increment_current_argument(STR_EXPECTED);
+	condition->data2 = create_string_data(current_argument);
 	condition->data2_content = STRING;
-	next_arg_index++;
 
 	return (condition);
 }
@@ -276,16 +274,13 @@ make_int_condition(check_t checker)
 {
 	condition_t *condition;
 
-	argument_range_check("Integer argument expected");
-	
 	condition = make_empty_condition();
 	condition->do_check = checker;
 	
-	condition->data1 = create_int_data(argument_data[next_arg_index], &(condition->params.compare_method));
+	increment_current_argument(INT_EXPECTED);
+	condition->data1 = create_int_data(current_argument, &(condition->params.compare_method));
 	condition->data1_content = LONG;
 	
-	next_arg_index++;
-
 	return (condition); 
 }
 
@@ -340,12 +335,12 @@ retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle)
 	if (args_bundle->follow_links && 
 		stat(file_name, &file_entry_stat))
 	{
-		errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name, strerror(errno));
 	}
 	if (!args_bundle->follow_links && 
 		lstat(file_name, &file_entry_stat))
 	{
-		errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name, strerror(errno));
 	}
 	
 	return (file_entry_stat);
@@ -353,7 +348,7 @@ retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle)
 
 
 condition_t *
-try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
+try_parse_condition(args_bundle_t *args_bundle)
 {
 	condition_t *condition = NULL;
 	struct stat file_entry_stat;
@@ -398,10 +393,9 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 		condition->do_check = check_atime;
 		condition->params.compare_method = '-';
 		
-		argument_range_check("String argument expected");
+		increment_current_argument(STR_EXPECTED);
 
-		file_name = copy_string(argument_data[next_arg_index]);
-		next_arg_index++;
+		file_name = copy_string(current_argument);
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
@@ -428,10 +422,9 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 		condition->do_check = check_ctime;
 		condition->params.compare_method = '-';
 		
-		argument_range_check("String argument expected");
+		increment_current_argument(STR_EXPECTED);
 
-		file_name = copy_string(argument_data[next_arg_index]);
-		next_arg_index++;
+		file_name = copy_string(current_argument);
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
@@ -458,10 +451,9 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 		condition->do_check = check_mtime;
 		condition->params.compare_method = '-';
 		
-		argument_range_check("String argument expected");
+		increment_current_argument(STR_EXPECTED);
 
-		file_name = copy_string(argument_data[next_arg_index]);
-		next_arg_index++;
+		file_name = copy_string(current_argument);
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
@@ -475,7 +467,7 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 
 
 int 
-try_parse_action(char *current_argument, args_bundle_t *args_bundle)
+try_parse_action(args_bundle_t *args_bundle)
 {
 	action_t *action;
 	int i;
@@ -495,10 +487,7 @@ try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 		/* count the number of subsequent arguments until ';' */
 		for (exec_args_count = 0; strcmp(current_argument, ";"); exec_args_count++)
 		{
-			argument_range_check("';' expected");
-
-			current_argument = argument_data[next_arg_index];
-			next_arg_index++;
+			increment_current_argument(SEMICOL_EXPECTED);
 		}
 		/* the first cycle is comparing 'exec' to ';' => don't count that' */
 		exec_args_count--;
@@ -506,7 +495,7 @@ try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 		/* make sure there is something to run */
 		if (!exec_args_count)
 		{
-			errx(1, ARG1_ERR_MSG, next_arg_index - 1, "String argument expected");
+			errx(1, ARG1_ERR_MSG, next_arg_index - 1, STR_EXPECTED);
 		}
 
 		action->param_count = exec_args_count;		
@@ -525,8 +514,7 @@ try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 		/* copy the literals */
 		for(i = 0; i < exec_args_count; i++)
 		{
-			current_argument = argument_data[next_arg_index];
-			next_arg_index++;
+			increment_current_argument(NULL);
 			
 			action->params[i] = copy_string(current_argument);
 		}
@@ -551,23 +539,33 @@ try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 
 
 int 
-try_parse_option(char *current_argument, args_bundle_t *args_bundle)
+try_parse_option(args_bundle_t *args_bundle)
 {
 	if (!strcmp(current_argument, "-follow"))
 	{
 		args_bundle->follow_links = 1;
 	}
-	else if (!strcmp(current_argument, "-no-follow"))
+	else if (!strcmp(current_argument, "-nofollow"))
 	{
 		args_bundle->follow_links = 0;
 	}
-	else if (!strcmp(current_argument, "-ignore-hidden"))
+	else if (!strcmp(current_argument, "-ignorehidden"))
 	{
 		args_bundle->ignore_hidden = 1;
 	}
-	else if (!strcmp(current_argument, "-no-ignore-hidden"))
+	else if (!strcmp(current_argument, "-noignorehidden"))
 	{
 		args_bundle->ignore_hidden = 0;
+	}
+	else if (!strcmp(current_argument, "-mindepth"))
+	{
+		increment_current_argument(INT_EXPECTED);
+		args_bundle->min_depth = atol(current_argument);
+	}
+	else if (!strcmp(current_argument, "-maxdepth"))
+	{
+		increment_current_argument(INT_EXPECTED);
+		args_bundle->max_depth = atol(current_argument);
 	}
 	else
 	{
@@ -585,8 +583,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 	
 	while (next_arg_index < argument_count)
 	{
-		current_argument = argument_data[next_arg_index];
-		next_arg_index++;
+		increment_current_argument(NULL);
 		
 		if (!strcmp(current_argument, "("))
 		{
@@ -616,12 +613,12 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 		}
 		else if (!strcmp(current_argument, ")"))
 		{
-			errx(1, ARG1_ERR_MSG, next_arg_index - 1, "')' was unexpected at this point");
+			errx(1, ARG1_ERR_MSG, next_arg_index - 1, PARENTH_UNEXPECTED);
 			break;
 		}
 		else
 		{
-			errx(1, ARG2_ERR_MSG, next_arg_index - 1, "Unknown token", current_argument);
+			errx(1, ARG2_ERR_MSG, next_arg_index - 1, UNKNOWN_TOKEN, current_argument);
 		}
 	}
 	return (condition);
@@ -630,7 +627,6 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 
 condition_t *build_condition_tree(args_bundle_t *args_bundle)
 {
-	char *current_argument = NULL;
 	condition_t *condition = NULL;
 	condition_t *condition_buffer = NULL;
 	condition_t *condition_temp = NULL;
@@ -645,8 +641,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 	
 	while (next_arg_index < argument_count)
 	{
-		current_argument = argument_data[next_arg_index];
-		next_arg_index++;
+		increment_current_argument(NULL);
 		
 		if (!strcmp(current_argument, ")"))
 		{
@@ -657,8 +652,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			condition_temp = build_condition_node(args_bundle);
 			if (!condition_temp)
 			{
-				assert(next_arg_index >= argument_count);
-				errx(1, ARG1_ERR_MSG, next_arg_index, "Expression expected after an 'or' operator");
+				errx(1, ARG1_ERR_MSG, next_arg_index, EXPR_EXPECTED);
 				break;
 			}
 			
@@ -689,8 +683,6 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			
 			if (!condition_temp)
 			{
-				assert(next_arg_index >= argument_count);
-				/*errx(1, "Argument parsing error at next_arg_index %d: Expression expected after an 'and' operator", next_arg_index);*/
 				break;
 			}
 			
@@ -721,10 +713,12 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 
 
 void
-argument_range_check(char * expected)
+increment_current_argument(char * expected)
 {
 	if (next_arg_index >= argument_count) 
 	{
 		errx(1, ARG1_ERR_MSG, next_arg_index, expected);
 	}
+	current_action = argument_data[next_arg_index];
+	next_arg_index++;
 }

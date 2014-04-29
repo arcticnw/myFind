@@ -95,21 +95,6 @@ int try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	return (1);
 }
 
-void crawl(const args_bundle_t *args_bundle)
-{
-	node_list_t *nodes = NULL;
-	
-	assert(args_bundle->action);
-
-	/* initialize node list for path loop detection */
-	nodes = initialize_node_list();
-		
-	/* start the search */
-	crawl_recursive(args_bundle->path, args_bundle, nodes);
-	
-	dispose_node_list(nodes);
-}
-
 void do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file)
 {
 	action_t *action;
@@ -120,7 +105,22 @@ void do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file)
 	}
 }
 
-void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_list_t *list)
+void crawl(const args_bundle_t *args_bundle)
+{
+	node_list_t *nodes = NULL;
+	
+	assert(args_bundle->action);
+
+	/* initialize node list for path loop detection */
+	nodes = initialize_node_list();
+		
+	/* start the search */
+	crawl_recursive(args_bundle->path, args_bundle, 0, nodes);
+	
+	dispose_node_list(nodes);
+}
+
+void crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth, node_list_t *list)
 {
 	DIR * dir;                      /* current directory */
 	DIR * subdir;                   /* subdirectory */
@@ -133,8 +133,14 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 	file_info_bundle_t file_info;   /* current file information pack */
 	int result;                     /* result of matching with conditions */
 	node_t *node;                   /* node returned by try_add_node */
+	char validDepth;                /* current depth is within specified bounds */
+	
+	validDepth = 
+	    args_bundle->min_depth < depth && 
+		(args_bundle->max_depth == -1 || depth < args_bundle->max_depth);
 	
 	/* make sure we aren't in path loop */
+	/* check only if link-following is allowed */
 	if (args_bundle->follow_links)
 	{
 		if (stat(path, &file_entry_stat))
@@ -184,59 +190,61 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 		real_path = realpath(local_path, (char*)NULL);
 		
 		/* get file status */
-		if (args_bundle->follow_links)
+		if (args_bundle->follow_links && stat(local_path, &file_entry_stat))
 		{
-			if (stat(local_path, &file_entry_stat))
-			{
-				fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
-				isLink = 0;
-				goto cleanupAndContinue; /* ask if allowed to use goto */
-			}
+			fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
+			isLink = 0;
+			goto cleanupAndContinue;
 		}
-		else
+		
+		if (!args_bundle->follow_links && lstat(local_path, &file_entry_stat))
 		{
-			if (lstat(local_path, &file_entry_stat))
-			{
-				fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
-				isLink = 0;
-				goto cleanupAndContinue; /* ask if allowed to use goto */
-			}
+			fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
+			isLink = 0;
+			goto cleanupAndContinue;
 		}
 
 		isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
 		
-		/* prepare file infomation pack */
-		file_info.file_entry = file_entry;
-		file_info.local_path = local_path;
-		file_info.real_path = real_path;
-		file_info.file_entry_stat = file_entry_stat;
-		file_info.time_now = args_bundle->time_now;
+		/* start file testing only if the minimum depth has been reached */
+		if (validDepth)
+		{
+		
+			/* prepare file infomation pack */
+			file_info.file_entry = file_entry;
+			file_info.local_path = local_path;
+			file_info.real_path = real_path;
+			file_info.file_entry_stat = file_entry_stat;
+			file_info.time_now = args_bundle->time_now;
+					
+			if (args_bundle->condition)
+			{
+				/* match file with find conditions */
+				result = args_bundle->condition->do_check(args_bundle->condition, file_info);
+			}
+			else
+			{
+				/* no condition => match everything */
+				result = 1;
+			}
 				
-		if (args_bundle->condition)
-		{
-			/* match file with find conditions */
-			result = args_bundle->condition->do_check(args_bundle->condition, file_info);
-		}
-		else
-		{
-			/* no condition => match everything */
-			result = 1;
-		}
-			
-		/* if matching => apply actions */
-		if (result)
-		{
-			do_actions(args_bundle, file_info);
+			/* if matching => apply actions */
+			if (result)
+			{
+				do_actions(args_bundle, file_info);
+			}
+		
 		}
 		
 		/* if file isn't symlink and link-following is disabled, attempt to 
 			 open file as directory and traverse it */
 		
 		if ((args_bundle->follow_links || !isLink) &&
+			(args_bundle->max_depth == -1 || depth + 1 < args_bundle->max_depth)
 			(subdir = opendir(local_path)))
 		{
 			closedir(subdir);
-			crawl_recursive(local_path, args_bundle, list);
+			crawl_recursive(local_path, args_bundle, depth+1, list);
 		}
 			
 cleanupAndContinue: /* ask if allowed to use goto */

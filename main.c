@@ -15,19 +15,27 @@ void usage(const char *name)
 	/* options */
 	printf("[options]:\n\n");
 	
-	/* -follow, -nofollow */
+	/* follow, no follow */
 	printf("%s\n    %s\n", "-follow",
 	    "will resolve symlinks and will dive into directory symlinks");
-	printf("%s\n    %s\n    %s\n", "-no-follow", 
+	printf("%s\n    %s\n    %s\n", "-nofollow", 
 	    "won't resolve symlinks and won't dive into directory symlinks",
 	    "default");
 		
-	/* -ignore-hidden, -no-ignore-hidden */
-	printf("%s\n    %s\n    %s\n", "-ignore-hidden", 
+	/* ignore hidden, no ignore hidden */
+	printf("%s\n    %s\n    %s\n", "-ignorehidden", 
 	    "will ignore hidden files", 
 	    "default");
-	printf("%s\n    %s\n", "-no-ignore-hidden",
+	printf("%s\n    %s\n", "-noignorehidden",
 	    "won't ignore hidden files");
+	
+	/* min depth, max depth*/
+	printf("%s\n    %s\n", "-mindepth n", 
+	    "will ignore hidden files");
+	printf("%s\n    %s\n", "-maxdepth n",
+	    "won't ignore hidden files");
+	
+	
 	printf("\n\n");
 	
 	/* about numeric arguments */
