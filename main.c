@@ -8,7 +8,7 @@
 #include "debug.h"
 
 void
-usage(const char *name) { /*                                                                            v*/
+usage(const char *name) {
 	printf("Usage: %s path [options] [expression [expression [..]]]\n\n",
 	    name);
 
@@ -29,7 +29,7 @@ usage(const char *name) { /*                                                    
 	printf("%s\n    %s\n", "-noignorehidden",
 	    "won't ignore hidden files");
 
-	/* min depth, max depth*/
+	/* min depth, max depth */
 	printf("%s\n    %s\n", "-mindepth n",
 	    "will ignore hidden files");
 	printf("%s\n    %s\n", "-maxdepth n",
@@ -39,7 +39,7 @@ usage(const char *name) { /*                                                    
 	/* expressions */
 	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
 
-	/* name, iname*/
+	/* name, iname */
 	printf("%s\n    %s\n", "name filename",
 	    "will match files with filename pattern");
 	printf("%s\n    %s\n    %s\n", "iname filename",
@@ -139,7 +139,7 @@ main(int argc, char **argv) {
 
 	if (argc < 2) {
 		usage(argv[0]);
-		return 0;
+		return (0);
 	}
 
 	printf("** parse\n");
@@ -156,5 +156,5 @@ main(int argc, char **argv) {
 
 	printf("** bye\n");
 
-	return 0;
+	return (0);
 }
