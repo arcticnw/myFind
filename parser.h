@@ -3,10 +3,10 @@
 
 #include "common.h"
 
-#define	ARG_ERR_MSG Argument parsing error at current_position %d:
-#define	ARG1_ERR_MSG "ARG_ERR_MSG %s"
-#define	ARG2_ERR_MSG "ARG_ERR_MSG %s: %s"
-#define	ARG2_FILE_ERR_MSG "ARG_ERR_MSG Unable to access file %s: %s"
+#define	ARG_ERR_MSG "Argument parsing error at current_position %d: "
+#define	ARG1_ERR_MSG ARG_ERR_MSG "%s"
+#define	ARG2_ERR_MSG ARG_ERR_MSG "%s: %s"
+#define	ARG2_FILE_ERR_MSG ARG_ERR_MSG "Unable to access file %s: %s"
 
 
 /* this function sets defaults, checks and parses string arguments and        */

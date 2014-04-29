@@ -87,95 +87,95 @@ int check_or(condition_t *condition, file_info_bundle_t file)
 
 int check_name(condition_t *condition, file_info_bundle_t file)
 {
-    char *file_name;
-    int return_value;
-    
-    assert(condition);
-    assert(condition->data1_content == STRING);
+	char *file_name;
+	int return_value;
+
+	assert(condition);
+	assert(condition->data1_content == STRING);
 	assert(condition->data1.string_data);
 	/* data1 = pattern */
-    
-    if (!condition->params.is_case_sensitive)
-    {
+
+	if (!condition->params.is_case_sensitive)
+	{
 		file_name = copy_string(file.file_entry->d_name);
-        string_to_lower(file_name);
-    }
-    else
-    {
-        file_name = file.file_entry->d_name;
-    }
-    
-    return_value = !fnmatch(condition->data1.string_data, file_name, FNM_PATHNAME);
-    
-    if (!condition->params.is_case_sensitive)
-    {
-        free(file_name);
-    }
-    
-    return (return_value);
+		string_to_lower(file_name);
+	}
+	else
+	{
+		file_name = file.file_entry->d_name;
+	}
+
+	return_value = !fnmatch(condition->data1.string_data, file_name, FNM_PATHNAME);
+
+	if (!condition->params.is_case_sensitive)
+	{
+		free(file_name);
+	}
+
+	return (return_value);
 }
 
 int check_atime(condition_t *condition, file_info_bundle_t file)
 {
 	assert(condition);
-	assert(condition->data1_content == LONGLONG);
-	assert(condition->data2_content == LONGLONG);
+	assert(condition->data1_content == LONG);
+	assert(condition->data2_content == LONG);
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 	
 	return ( compare_time(
-	    file->time_now, 
-	    file->file_entry_stat->st_atime, 
-	    condition->data2.longlong_data, 
-	    condition->data1.longlong_data,
+	    file.time_now, 
+	    file.file_entry_stat.st_atime, 
+	    condition->data2.long_data, 
+	    condition->data1.long_data,
 	    condition->params.compare_method) );
 }
 
 int check_mtime(condition_t *condition, file_info_bundle_t file)
 {
 	assert(condition);
-	assert(condition->data1_content == LONGLONG);
-	assert(condition->data2_content == LONGLONG);
+	assert(condition->data1_content == LONG);
+	assert(condition->data2_content == LONG);
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 	
 	return ( compare_time(
-	    file->time_now, 
-	    file->file_entry_stat->st_mtime, 
-	    condition->data2.longlong_data, 
-	    condition->data1.longlong_data,
+	    file.time_now, 
+	    file.file_entry_stat.st_mtime, 
+	    condition->data2.long_data, 
+	    condition->data1.long_data,
 	    condition->params.compare_method) );
 }
 
 int check_ctime(condition_t *condition, file_info_bundle_t file)
 {
 	assert(condition);
-	assert(condition->data1_content == LONGLONG);
-	assert(condition->data2_content == LONGLONG);
+	assert(condition->data1_content == LONG);
+	assert(condition->data2_content == LONG);
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 	
 	return ( compare_time(
-	    file->time_now, 
-	    file->file_entry_stat->st_ctime, 
-	    condition->data2.longlong_data, 
-	    condition->data1.longlong_data,
+	    file.time_now, 
+	    file.file_entry_stat.st_ctime, 
+	    condition->data2.long_data, 
+	    condition->data1.long_data,
 	    condition->params.compare_method) );
 }
 
-int compare_time(time_t now, time_t file_time, long long accurancy, long long target, char compare_method)
+int compare_time(time_t now, time_t file_time, long accurancy, long target, char compare_method)
 {
+	long difference;
+
 	assert(accurancy);
 	if (!accurancy)
 	{
 		accurancy = 1;
 	}
 
-	long long difference;
-	
 	difference = (now - file_time) / accurancy;
 
-	switch (condition->params.compare_method)
+	switch (compare_method)
 	{
 		case '-': 
 			return difference < target; 

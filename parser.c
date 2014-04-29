@@ -170,7 +170,7 @@ data_t
 create_int_data(char *original_data, char *comparison)
 {
 	char *parse_data = original_data;
-	long long value;
+	long value;
 	data_t data;
 	
 	assert(original_data);
@@ -191,8 +191,8 @@ create_int_data(char *original_data, char *comparison)
 		*comparison = ' ';
 	}
 	
-	value = atoll(parse_data);
-	data.longlong_data = value;
+	value = atol(parse_data);
+	data.long_data = value;
 	
 	return (data);
 }
@@ -222,9 +222,9 @@ make_empty_condition()
 	}
 	
 	condition->do_check = check_true;
-	condition->data1.longlong_data = 0;
+	condition->data1.long_data = 0;
 	condition->data1_content = NONE;
-	condition->data2.longlong_data = 0;
+	condition->data2.long_data = 0;
 	condition->data2_content = NONE;
 	
 	return (condition);
@@ -282,7 +282,7 @@ make_int_condition(check_t checker)
 	condition->do_check = checker;
 	
 	condition->data1 = create_int_data(argument_data[next_arg_index], &(condition->params.compare_method));
-	condition->data1_content = LONGLONG;
+	condition->data1_content = LONG;
 	
 	next_arg_index++;
 
@@ -363,14 +363,14 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 	else if (!strcmp(current_argument, "amin"))
 	{
 		condition = make_int_condition(check_atime);
-		condition->data2.longlong_data = 60; /* comparing by minutes */
-		condition->data2_content = LONGLONG;
+		condition->data2.long_data = 60; /* comparing by minutes */
+		condition->data2_content = LONG;
 	} 
 	else if (!strcmp(current_argument, "atime"))
 	{
 		condition = make_int_condition(check_atime);
-		condition->data2.longlong_data = 60*60*24; /* comparing by days */
-		condition->data2_content = LONGLONG;
+		condition->data2.long_data = 60*60*24; /* comparing by days */
+		condition->data2_content = LONG;
 	}
 	else if (!strcmp(current_argument, "anewer"))
 	{
@@ -393,11 +393,11 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 			errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
 		}
 
-		condition->data1.longlong_data = file_entry_stat->st_atime;
-		condition->data1_content = LONGLONG;
+		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1_content = LONG;
 		
-		condition->data2.longlong_data = 1;
-		condition->data2_content = LONGLONG;
+		condition->data2.long_data = 1;
+		condition->data2_content = LONG;
 		
 		condition->params.compare_method = '-';
 

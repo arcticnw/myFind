@@ -130,7 +130,7 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 	int local_path_length;          /* (string) length of relative path */
 	char *real_path = NULL;         /* absolute path to current file */
 	char isLink;                    /* current file is symlink */
-	file_info_bundle_t file_entry;  /* current file information pack */
+	file_info_bundle_t file_info;   /* current file information pack */
 	int result;                     /* result of matching with conditions */
 	node_t *node;                   /* node returned by try_add_node */
 	
@@ -206,16 +206,16 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 		isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
 		
 		/* prepare file infomation pack */
-		file_entry.file_entry = file_entry;
-		file_entry.local_path = local_path;
-		file_entry.real_path = real_path;
-		file_entry.file_entry_stat = file_entry_stat;
-		file_entry.time_now = args_bundle->time_now;
+		file_info.file_entry = file_entry;
+		file_info.local_path = local_path;
+		file_info.real_path = real_path;
+		file_info.file_entry_stat = file_entry_stat;
+		file_info.time_now = args_bundle->time_now;
 				
 		if (args_bundle->condition)
 		{
 			/* match file with find conditions */
-			result = args_bundle->condition->do_check(args_bundle->condition, file_entry);
+			result = args_bundle->condition->do_check(args_bundle->condition, file_info);
 		}
 		else
 		{
@@ -226,7 +226,7 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 		/* if matching => apply actions */
 		if (result)
 		{
-			do_actions(args_bundle, file_entry);
+			do_actions(args_bundle, file_info);
 		}
 		
 		/* if file isn't symlink and link-following is disabled, attempt to 

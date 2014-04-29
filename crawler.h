@@ -5,9 +5,9 @@
 
 #include "common.h"
 
-#define FILE_ACCESS_WRN_MSG = "Unable to access file %s: %s\n"
-#define DIR_ACCESS_WRN_MSG = "Unable to access directory %s: %s\n"
-#define DIR_LOOP_WRN_MSG = "File system loop detected: %s was already visited in %s\n"
+#define FILE_ACCESS_WRN_MSG "Unable to access file %s: %s\n"
+#define DIR_ACCESS_WRN_MSG "Unable to access directory %s: %s\n"
+#define DIR_LOOP_WRN_MSG "File system loop detected: %s was already visited in %s\n"
 
 /* this structure holds information about visited node ids and their relative */
 /*     paths and a pointer to next one                                        */

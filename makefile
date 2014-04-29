@@ -1,4 +1,3 @@
-#CFLAGS     = -Wall -pedantic -ggdb -c90
 CFLAGS     = -Wall -pedantic -ggdb
 EXECUTABLE = main
 SOURCES    = $(wildcard ./*.c)

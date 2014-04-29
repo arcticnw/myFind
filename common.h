@@ -48,14 +48,14 @@ struct condition_p;
 /* this structure holds data for one side of an operator/check function       */
 union data_p {
 	char *string_data;
-	long long longlong_data;
+	long long_data;
 	struct condition_p * condition_data;
 };
 typedef union data_p data_t;
 
 
 /* this enum specifies the type of content present in the data_p              */
-typedef enum {LONGLONG, STRING, CONDITION, NONE} content_t;
+typedef enum {LONG, STRING, CONDITION, NONE} content_t;
 
 
 /* this structure holds additional parameters for a check function            */

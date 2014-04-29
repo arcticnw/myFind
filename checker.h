@@ -53,5 +53,5 @@ check_name(condition_t *condition, file_info_bundle_t file);
 /* this function computes the difference of the time since file_time until now*/
 /*     divides this time by accurancy and then compares it to target timeframe*/
 /*     using specified comparison method                                      */
-int compare_time(time_t now, time_t file_time, long long accurancy, long long target, char compare_method);
+int compare_time(time_t now, time_t file_time, long accurancy, long target, char compare_method);
 #endif
