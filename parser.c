@@ -50,13 +50,13 @@ initialize_args_bundle()
 {
 	args_bundle_t *args_bundle;
 	args_bundle = malloc(sizeof(args_bundle_t));
-	time(&(args_bundle->time_now));
 	if (!args_bundle)
 	{
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	args_bundle->follow_links = 0;
 	args_bundle->ignore_hidden = 1;
+	time(&(args_bundle->time_now));
 	args_bundle->path = NULL;
 	args_bundle->condition = NULL;
 	args_bundle->action = NULL;
@@ -405,7 +405,7 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
-		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1.long_data = args_bundle->time_now - file_entry_stat.st_atime;
 		condition->data1_content = LONG;
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
@@ -435,7 +435,7 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
-		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1.long_data = args_bundle->time_now - file_entry_stat.st_atime;
 		condition->data1_content = LONG;
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
@@ -465,7 +465,7 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 
 		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
-		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1.long_data = args_bundle->time_now - file_entry_stat.st_atime;
 		condition->data1_content = LONG;
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;

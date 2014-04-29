@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 {
     args_bundle_t *args_bundle;
     
-    printf("hello\n");
+    printf("** hello\n");
     
     if (argc < 2)
     {
@@ -119,19 +119,19 @@ int main(int argc, char **argv)
         return 0;
     }
     
-    printf("parse\n");
+    printf("** parse\n");
     
     args_bundle = parse_arguments(argc, argv);
     
     dumpArgsBundle(args_bundle);
     
-    printf("crawl\n");
+    printf("** crawl\n");
     crawl(args_bundle);
     
-    printf("dispose\n");
+    printf("** dispose\n");
     dispose_args_bundle(args_bundle);
     
-    printf("bye\n");
+    printf("** bye\n");
     
     return 0;
 }
