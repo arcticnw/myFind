@@ -48,29 +48,29 @@ void usage(const char *name)
 	printf("\n");
 		
 	/* amin, atime, anewer */
-	printf("%s\n    %s\n", "amin n"
+	printf("%s\n    %s\n", "amin n",
 		"will match files accessed n minutes ago");
-	printf("%s\n    %s\n", "atime n"
+	printf("%s\n    %s\n", "atime n",
 		"will match files accessed n days ago");
-	printf("%s\n    %s\n", "anewer file"
+	printf("%s\n    %s\n", "anewer file",
 		"will match files accessed more recently than file");
 	printf("\n");
 		
 	/* cmin, ctime, cnewer */
-	printf("%s\n    %s\n", "cmin n"
+	printf("%s\n    %s\n", "cmin n",
 		"will match files created n minutes ago");
-	printf("%s\n    %s\n", "ctime n"
+	printf("%s\n    %s\n", "ctime n",
 		"will match files created n days ago");
-	printf("%s\n    %s\n", "cnewer file"
+	printf("%s\n    %s\n", "cnewer file",
 		"will match files created more recently than file");
 	printf("\n");
 		
 	/* mmin, mtime, mnewer */
-	printf("%s\n    %s\n", "mmin n"
+	printf("%s\n    %s\n", "mmin n",
 		"will match files modified n minutes ago");
-	printf("%s\n    %s\n", "mtime n"
+	printf("%s\n    %s\n", "mtime n",
 		"will match files modified n days ago");
-	printf("%s\n    %s\n", "mnewer file"
+	printf("%s\n    %s\n", "mnewer file",
 		"will match files modified more recently than file");
 	printf("\n");
 		
