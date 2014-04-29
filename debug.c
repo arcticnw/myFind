@@ -17,21 +17,21 @@ void dumpArgsBundle(args_bundle_t *bundle) {
 
 	printf("condition: ");
 	dumpCondition(bundle->condition);
-	printf("\n"); 
+	printf("\n");
 
 	printf("action: ");
 	dumpAction(bundle->action);
-	printf("\n"); 
+	printf("\n");
 
 	printf("# END #\n");
 }
 
 void dumpFlags(args_bundle_t *bundle) {
 	printf("; followLinks: ");
-	if (bundle->follow_links) { 
+	if (bundle->follow_links) {
 		printf("yes");
-	} else { 
-		printf("no"); 
+	} else {
+		printf("no");
 	}
 
 	printf("; ignoreHidden: ");
@@ -122,4 +122,3 @@ void dumpAction(action_t * action) {
 		dumpAction(action->next);
 	}
 }
-

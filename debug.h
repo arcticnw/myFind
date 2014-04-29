@@ -1,21 +1,21 @@
 #ifndef _DEBUG_H_
-#define _DEBUG_H_
+#define	_DEBUG_H_
 
 #include "common.h"
 
-void 
+void
 dumpArgsBundle(args_bundle_t *bundle);
 
-void 
+void
 dumpFlags(args_bundle_t *bundle);
 
-void 
+void
 dumpData(data_t data, content_t content);
 
-void 
+void
 dumpCondition(condition_t *condition);
 
-void 
+void
 dumpAction(action_t *action);
 
 #endif

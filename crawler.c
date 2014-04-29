@@ -119,7 +119,7 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 	DIR * dir; /* current directory */
 	DIR * subdir; /* subdirectory */
 	struct dirent * file_entry; /* current file name */
-	struct stat file_entry_stat; /* current file status  */
+	struct stat file_entry_stat; /* current file status */
 	char *local_path = NULL; /* relative path to current file */
 	int local_path_length; /* (string) length of relative path */
 	char *real_path = NULL; /* absolute path to current file */

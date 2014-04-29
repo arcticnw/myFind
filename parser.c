@@ -465,7 +465,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 			increment_current_argument(SEMICOL_EXPECTED);
 		}
 		/* the first cycle is comparing 'exec' to ';' */
-		/*     => exclude this from the argument count */
+		/* => exclude this from the argument count */
 		exec_args_count--;
 
 		/* make sure there is something to run */
@@ -598,8 +598,8 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 				condition_buffer = condition_temp;
 			} else {
 				/* buffer is not empty => merge the buffer */
-				/*     with main condition via 'OR' operation */
-				/*     and refill the buffer */
+				/* with main condition via 'OR' operation */
+				/* and refill the buffer */
 				condition = merge_condition_nodes(condition,
 				    condition_buffer, check_or);
 				condition_buffer = condition_temp;
@@ -610,7 +610,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 			/* implicit 'AND' operation between arguments */
 			if (strcmp(current_argument, "and")) {
 				/* current token isn't 'AND' */
-				/*     => condition consumed => undo */
+				/* => condition consumed => undo */
 				next_arg_index--;
 			}
 			condition_temp = build_condition_node(args_bundle);
@@ -621,15 +621,15 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 
 			if (!condition_buffer) {
 				/* buffer is empty */
-				/*     => apply operation 'AND' with */
-				/*     the left node */
+				/* => apply operation 'AND' with */
+				/* the left node */
 				condition = merge_condition_nodes(
 				    condition, condition_temp,
 				    check_and);
 			} else {
 				/* buffer is not empty */
-				/*     => apply operation 'AND' with */
-				/*     the right node */
+				/* => apply operation 'AND' with */
+				/* the right node */
 				condition_buffer = merge_condition_nodes(
 				    condition_buffer, condition_temp,
 				    check_and);
@@ -641,7 +641,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 
 	if (condition_buffer) {
 		/* buffer isn't empty => merge buffer with main condition */
-		/*     using 'OR' operation */
+		/* using 'OR' operation */
 		condition = merge_condition_nodes(
 		    condition, condition_buffer, check_or);
 		condition_buffer = NULL;
