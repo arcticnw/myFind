@@ -4,27 +4,28 @@
 #include <strings.h>
 #include <fnmatch.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "common.h"
 #include "checker.h"
 
-int check_true(condition_t *condition, file_t file)
+int check_true(condition_t *condition, file_info_bundle_t file)
 {
     return (1);
 }
-int check_false(condition_t *condition, file_t file)
+int check_false(condition_t *condition, file_info_bundle_t file)
 {
     return (0);
 }
 
-int check(condition_t *condition, file_t file)
+int check(condition_t *condition, file_info_bundle_t file)
 {
     assert(condition);
     assert(condition->do_check);
 
     return (condition->do_check(condition, file));
 }
-int check_not(condition_t *condition, file_t file)
+int check_not(condition_t *condition, file_info_bundle_t file)
 {
     int result = 0;
     
@@ -37,7 +38,7 @@ int check_not(condition_t *condition, file_t file)
     return (!result);
 }
 
-int check_and(condition_t *condition, file_t file)
+int check_and(condition_t *condition, file_info_bundle_t file)
 {
     int leftSideResult = 0;
     int rightSideResult = 0;
@@ -60,7 +61,7 @@ int check_and(condition_t *condition, file_t file)
       
     return (leftSideResult && rightSideResult);
 }
-int check_or(condition_t *condition, file_t file)
+int check_or(condition_t *condition, file_info_bundle_t file)
 {
     int leftSideResult = 0;
     int rightSideResult = 0;
@@ -84,7 +85,7 @@ int check_or(condition_t *condition, file_t file)
     return (leftSideResult || rightSideResult);
 }
 
-int check_name(condition_t *condition, file_t file)
+int check_name(condition_t *condition, file_info_bundle_t file)
 {
     char *file_name;
     int return_value;
@@ -92,15 +93,16 @@ int check_name(condition_t *condition, file_t file)
     assert(condition);
     assert(condition->data1_content == STRING);
 	assert(condition->data1.string_data);
+	/* data1 = pattern */
     
     if (!condition->params.is_case_sensitive)
     {
-		file_name = copy_string(file.dir_entry->d_name);
+		file_name = copy_string(file.file_entry->d_name);
         string_to_lower(file_name);
     }
     else
     {
-        file_name = file.dir_entry->d_name;
+        file_name = file.file_entry->d_name;
     }
     
     return_value = !fnmatch(condition->data1.string_data, file_name, FNM_PATHNAME);
@@ -111,4 +113,78 @@ int check_name(condition_t *condition, file_t file)
     }
     
     return (return_value);
+}
+
+int check_atime(condition_t *condition, file_info_bundle_t file)
+{
+	assert(condition);
+	assert(condition->data1_content == LONGLONG);
+	assert(condition->data2_content == LONGLONG);
+	/* data1 = compared time */
+	/* data2 = accurancy (divisor) */
+	
+	return ( compare_time(
+	    file->time_now, 
+	    file->file_entry_stat->st_atime, 
+	    condition->data2.longlong_data, 
+	    condition->data1.longlong_data,
+	    condition->params.compare_method) );
+}
+
+int check_mtime(condition_t *condition, file_info_bundle_t file)
+{
+	assert(condition);
+	assert(condition->data1_content == LONGLONG);
+	assert(condition->data2_content == LONGLONG);
+	/* data1 = compared time */
+	/* data2 = accurancy (divisor) */
+	
+	return ( compare_time(
+	    file->time_now, 
+	    file->file_entry_stat->st_mtime, 
+	    condition->data2.longlong_data, 
+	    condition->data1.longlong_data,
+	    condition->params.compare_method) );
+}
+
+int check_ctime(condition_t *condition, file_info_bundle_t file)
+{
+	assert(condition);
+	assert(condition->data1_content == LONGLONG);
+	assert(condition->data2_content == LONGLONG);
+	/* data1 = compared time */
+	/* data2 = accurancy (divisor) */
+	
+	return ( compare_time(
+	    file->time_now, 
+	    file->file_entry_stat->st_ctime, 
+	    condition->data2.longlong_data, 
+	    condition->data1.longlong_data,
+	    condition->params.compare_method) );
+}
+
+int compare_time(time_t now, time_t file_time, long long accurancy, long long target, char compare_method)
+{
+	assert(accurancy);
+	if (!accurancy)
+	{
+		accurancy = 1;
+	}
+
+	long long difference;
+	
+	difference = (now - file_time) / accurancy;
+
+	switch (condition->params.compare_method)
+	{
+		case '-': 
+			return difference < target; 
+			break;
+		case '+':
+			return difference > target; 
+			break;
+		default:
+			return difference = target; 
+			break;
+	}
 }

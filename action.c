@@ -11,12 +11,12 @@
 #include "common.h"
 #include "action.h"
 
-void do_print(action_t *action, file_t file)
+void do_print(action_t *action, file_info_bundle_t file)
 {
 	printf("%s\n", file.local_path);
 }
 
-void do_execute(action_t *action, file_t file)
+void do_execute(action_t *action, file_info_bundle_t file)
 {
 	pid_t child_pid;
 	pid_t wait_pid;
@@ -55,7 +55,6 @@ void do_execute(action_t *action, file_t file)
 			wait_pid = waitpid(child_pid, NULL, 0);
 			if (wait_pid != child_pid)
 			{
-				assert(0); /* << DBG, REMOVE */
 				/* ignore */
 			}
 			break;

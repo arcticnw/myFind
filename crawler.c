@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <assert.h>
 
 #include "common.h"
@@ -109,7 +110,7 @@ void crawl(const args_bundle_t *args_bundle)
 	dispose_node_list(nodes);
 }
 
-void do_actions(const args_bundle_t *args_bundle, file_t file)
+void do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file)
 {
 	action_t *action;
 	
@@ -121,29 +122,29 @@ void do_actions(const args_bundle_t *args_bundle, file_t file)
 
 void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_list_t *list)
 {
-	DIR * dir;                  /* current directory */
-	DIR * subdir;               /* subdirectory */
-	struct dirent * dir_entry;  /* current file name */
-	struct stat dir_entry_stat; /* current file status  */
-	char *local_path = NULL;    /* relative path to current file */
-	int local_path_length;      /* (string) length of relative path */
-	char *real_path = NULL;     /* absolute path to current file */
-	char isLink;                /* current file is symlink */
-	file_t file_entry;          /* current file information pack */
-	int result;                 /* result of matching with conditions */
-	node_t *node;               /* node returned by try_add_node */
+	DIR * dir;                      /* current directory */
+	DIR * subdir;                   /* subdirectory */
+	struct dirent * file_entry;     /* current file name */
+	struct stat file_entry_stat;    /* current file status  */
+	char *local_path = NULL;        /* relative path to current file */
+	int local_path_length;          /* (string) length of relative path */
+	char *real_path = NULL;         /* absolute path to current file */
+	char isLink;                    /* current file is symlink */
+	file_info_bundle_t file_entry;  /* current file information pack */
+	int result;                     /* result of matching with conditions */
+	node_t *node;                   /* node returned by try_add_node */
 	
 	/* make sure we aren't in path loop */
 	if (args_bundle->follow_links)
 	{
-		if (stat(path, &dir_entry_stat))
+		if (stat(path, &file_entry_stat))
 		{
-			fprintf(stderr, "Unable to access directory information %s: %s\n", path, strerror(errno));
+			fprintf(stderr, DIR_ACCESS_WRN_MSG, path, strerror(errno));
 			return;
 		}
-		if (args_bundle->follow_links && !try_add_node(list, path, dir_entry_stat.st_ino, &node))
+		if (args_bundle->follow_links && !try_add_node(list, path, file_entry_stat.st_ino, &node))
 		{
-			fprintf(stderr, "File system loop detected: %s was already visited in %s\n", path, node->local_name);
+			fprintf(stderr, DIR_LOOP_WRN_MSG, path, node->local_name);
 			return;
 		}
 	}
@@ -151,29 +152,33 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 	/* open directory */
 	if (!(dir = opendir(path)))
 	{
-		fprintf(stderr, "Unable to open directory %s: %s\n", path, strerror(errno));
+		fprintf(stderr, DIR_ACCESS_WRN_MSG, path, strerror(errno));
 		return;
 	}
 	
 	/* traverse directory */
-	while ((dir_entry = readdir(dir)))
+	while ((file_entry = readdir(dir)))
 	{ 
 		/* skip self and parent directory */
-		if (!strcmp(dir_entry->d_name, ".") || !strcmp(dir_entry->d_name, ".."))
+		if (!strcmp(file_entry->d_name, ".") || !strcmp(file_entry->d_name, ".."))
 		{
 			continue;
 		}
 		
 		/* skip hidden */
-		if (args_bundle->ignore_hidden && dir_entry->d_name[0] == '.')
+		if (args_bundle->ignore_hidden && file_entry->d_name[0] == '.')
 		{
 			continue;
 		}
 	
 		/* get relative path */
-		local_path_length = strlen(path) + strlen(dir_entry->d_name) + 2;
-		local_path = malloc(local_path_length);
-		snprintf(local_path, local_path_length, "%s/%s", path, dir_entry->d_name);
+		local_path_length = strlen(path) + strlen(file_entry->d_name) + 2;
+		local_path = malloc(sizeof(char) * local_path_length);
+		if (!local_path)
+		{
+			errx(127, MALLOC_ERR_MSG, strerror(errno));
+		}
+		snprintf(local_path, local_path_length, "%s/%s", path, file_entry->d_name);
 		
 		/* get absolute path */
 		real_path = realpath(local_path, (char*)NULL);
@@ -181,30 +186,31 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, node_li
 		/* get file status */
 		if (args_bundle->follow_links)
 		{
-			if (stat(local_path, &dir_entry_stat))
+			if (stat(local_path, &file_entry_stat))
 			{
-				fprintf(stderr, "Unable to access file %s: %s\n", local_path, strerror(errno));
+				fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
 				isLink = 0;
 				goto cleanupAndContinue; /* ask if allowed to use goto */
 			}
 		}
 		else
 		{
-			if (lstat(local_path, &dir_entry_stat))
+			if (lstat(local_path, &file_entry_stat))
 			{
-				fprintf(stderr, "Unable to access file %s: %s\n", local_path, strerror(errno));
+				fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
 				isLink = 0;
 				goto cleanupAndContinue; /* ask if allowed to use goto */
 			}
 		}
 
-		isLink = (S_ISLNK(dir_entry_stat.st_mode) != 0);
+		isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
 		
 		/* prepare file infomation pack */
-		file_entry.dir_entry = dir_entry;
+		file_entry.file_entry = file_entry;
 		file_entry.local_path = local_path;
 		file_entry.real_path = real_path;
-		file_entry.dir_entry_stat = dir_entry_stat;
+		file_entry.file_entry_stat = file_entry_stat;
+		file_entry.time_now = args_bundle->time_now;
 				
 		if (args_bundle->condition)
 		{

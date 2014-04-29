@@ -5,6 +5,10 @@
 
 #include "common.h"
 
+#define FILE_ACCESS_WRN_MSG = "Unable to access file %s: %s\n"
+#define DIR_ACCESS_WRN_MSG = "Unable to access directory %s: %s\n"
+#define DIR_LOOP_WRN_MSG = "File system loop detected: %s was already visited in %s\n"
+
 /* this structure holds information about visited node ids and their relative */
 /*     paths and a pointer to next one                                        */
 struct node_p {
@@ -47,9 +51,9 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 
 	
 /* this function goes through the linked list of actions and applies their    */
-/*     do_action function-pointer on the file_t                               */
+/*     do_action function-pointer on the file_info_bundle_t                               */
 void 
-do_actions(const args_bundle_t *args_bundle, file_t file);
+do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file);
 
 
 /* this function starts a search using given arguments                        */

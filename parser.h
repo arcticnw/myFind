@@ -3,8 +3,10 @@
 
 #include "common.h"
 
-#define	ARG_ERR_MSG "Argument parsing error at current_position %d: %s"
-#define	ARG2_ERR_MSG "Argument parsing error at current_position %d: %s: %s"
+#define	ARG_ERR_MSG Argument parsing error at current_position %d:
+#define	ARG1_ERR_MSG "ARG_ERR_MSG %s"
+#define	ARG2_ERR_MSG "ARG_ERR_MSG %s: %s"
+#define	ARG2_FILE_ERR_MSG "ARG_ERR_MSG Unable to access file %s: %s"
 
 
 /* this function sets defaults, checks and parses string arguments and        */
@@ -52,7 +54,7 @@ create_string_data(const char *original_data);
 /* this function initializes a data-holding struct from provided integer and  */
 /*     determines the method of comparison (+ / -)                            */
 data_t 
-create_int_data(char *original_data, signed char *comparison);
+create_int_data(char *original_data, char *comparison);
 
 
 /* this function initializes a new condition using the two provided           */

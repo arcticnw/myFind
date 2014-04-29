@@ -41,9 +41,9 @@ void dumpData(data_t data, content_t content)
 	{
 		printf("%s", data.string_data);
 	}
-	else if (content == INT)
+	else if (content == LONGLONG)
 	{
-		printf("%d", data.int_data);
+		printf("%d", data.longlong_data);
 	}
 	else if (content == CONDITION)
 	{

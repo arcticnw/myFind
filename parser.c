@@ -4,6 +4,10 @@
 #include <errno.h>
 #include <stdio.h>
 #include <assert.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "common.h"
 #include "parser.h"
@@ -46,6 +50,7 @@ initialize_args_bundle()
 {
 	args_bundle_t *args_bundle;
 	args_bundle = malloc(sizeof(args_bundle_t));
+	time(&(args_bundle->time_now));
 	if (!args_bundle)
 	{
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
@@ -162,10 +167,10 @@ create_string_data(const char *original_data)
 
 
 data_t 
-create_int_data(char *original_data, signed char *comparison)
+create_int_data(char *original_data, char *comparison)
 {
 	char *parse_data = original_data;
-	int value;
+	long long value;
 	data_t data;
 	
 	assert(original_data);
@@ -174,20 +179,20 @@ create_int_data(char *original_data, signed char *comparison)
 	if (original_data[0] == '+')
 	{
 		parse_data++;
-		*comparison = -1;
+		*comparison = '+';
 	}
 	else if (original_data[0] == '-')
 	{
 		parse_data++;
-		*comparison = +1;
+		*comparison = '-';
 	}
 	else
 	{
-		*comparison = 0;
+		*comparison = ' ';
 	}
 	
-	value = atoi(parse_data);
-	data.int_data = value;
+	value = atoll(parse_data);
+	data.longlong_data = value;
 	
 	return (data);
 }
@@ -217,9 +222,9 @@ make_empty_condition()
 	}
 	
 	condition->do_check = check_true;
-	condition->data1.int_data = 0;
+	condition->data1.longlong_data = 0;
 	condition->data1_content = NONE;
-	condition->data2.int_data = 0;
+	condition->data2.longlong_data = 0;
 	condition->data2_content = NONE;
 	
 	return (condition);
@@ -277,7 +282,7 @@ make_int_condition(check_t checker)
 	condition->do_check = checker;
 	
 	condition->data1 = create_int_data(argument_data[next_arg_index], &(condition->params.compare_method));
-	condition->data1_content = INT;
+	condition->data1_content = LONGLONG;
 	
 	next_arg_index++;
 
@@ -331,8 +336,20 @@ condition_t *
 try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 {
 	condition_t *condition = NULL;
+	struct stat file_entry_stat;
+	char * file_name;
 	
-	if (!strcmp(current_argument, "name"))
+	if (!strcmp(current_argument, "true"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_true;
+	}
+	else if (!strcmp(current_argument, "false"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_false;
+	}
+	else if (!strcmp(current_argument, "name"))
 	{
 		condition = make_string_condition(check_name);
 		condition->params.is_case_sensitive = 1;		
@@ -343,15 +360,47 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 		string_to_lower(condition->data1.string_data);
 		condition->params.is_case_sensitive = 0;
 	}
-	else if (!strcmp(current_argument, "true"))
+	else if (!strcmp(current_argument, "amin"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_true;
+		condition = make_int_condition(check_atime);
+		condition->data2.longlong_data = 60; /* comparing by minutes */
+		condition->data2_content = LONGLONG;
+	} 
+	else if (!strcmp(current_argument, "atime"))
+	{
+		condition = make_int_condition(check_atime);
+		condition->data2.longlong_data = 60*60*24; /* comparing by days */
+		condition->data2_content = LONGLONG;
 	}
-	else if (!strcmp(current_argument, "false"))
+	else if (!strcmp(current_argument, "anewer"))
 	{
 		condition = make_empty_condition();
-		condition->do_check = check_false;
+		condition->do_check = check_atime;
+
+		argument_range_check("String argument expected");
+
+		file_name = copy_string(argument_data[next_arg_index]);
+		next_arg_index++;
+
+		if (args_bundle->follow_links && 
+		    stat(file_name, &file_entry_stat))
+		{
+			errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+		}
+		if (!args_bundle->follow_links && 
+		    lstat(file_name, &file_entry_stat))
+		{
+			errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+		}
+
+		condition->data1.longlong_data = file_entry_stat->st_atime;
+		condition->data1_content = LONGLONG;
+		
+		condition->data2.longlong_data = 1;
+		condition->data2_content = LONGLONG;
+		
+		condition->params.compare_method = '-';
+
 	}
 	return (condition);
 }
@@ -389,7 +438,7 @@ try_parse_action(char *current_argument, args_bundle_t *args_bundle)
 		/* make sure there is something to run */
 		if (!exec_args_count)
 		{
-			errx(1, ARG_ERR_MSG, next_arg_index - 1, "String argument expected");
+			errx(1, ARG1_ERR_MSG, next_arg_index - 1, "String argument expected");
 		}
 
 		action->param_count = exec_args_count;		
@@ -499,7 +548,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 		}
 		else if (!strcmp(current_argument, ")"))
 		{
-			errx(1, ARG_ERR_MSG, next_arg_index - 1, "')' was unexpected at this point");
+			errx(1, ARG1_ERR_MSG, next_arg_index - 1, "')' was unexpected at this point");
 			break;
 		}
 		else
@@ -541,7 +590,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 			if (!condition_temp)
 			{
 				assert(next_arg_index >= argument_count);
-				errx(1, ARG_ERR_MSG, next_arg_index, "Expression expected after an 'or' operator");
+				errx(1, ARG1_ERR_MSG, next_arg_index, "Expression expected after an 'or' operator");
 				break;
 			}
 			
@@ -608,6 +657,6 @@ argument_range_check(char * expected)
 {
 	if (next_arg_index >= argument_count) 
 	{
-		errx(1, ARG_ERR_MSG, next_arg_index, expected);
+		errx(1, ARG1_ERR_MSG, next_arg_index, expected);
 	}
 }

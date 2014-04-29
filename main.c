@@ -12,6 +12,7 @@ void usage(const char *name)
 	printf("Usage: %s path [options] [expression [expression [..]]]\n\n", 
 	    name);
 	
+	/* options */
 	printf("[options]:\n");
 	printf("%s\n    %s\n", "-follow",
 	    "will resolve symlinks and will dive into directory symlinks");
@@ -24,6 +25,7 @@ void usage(const char *name)
 	printf("%s\n    %s\n", "-noignore-hidden",
 	    "won't ignore hidden files");
 	
+	/* expressions */
 	printf("\n[expression]:\n");
 	printf("%s\n    %s\n", "name filename", 
 	    "will match files to filename pattern");
@@ -45,6 +47,7 @@ void usage(const char *name)
 	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]", 
 	    "following expression will be negated");
 	
+	/* actions */
 	printf("\n");
 	printf("%s\n    %s\n", "print", 
 	    "local path to the matching files will be printed to"
