@@ -108,7 +108,7 @@ usage(const char *name) { /*                                                    
 	    "'and' operator has tighter associativity than 'or' operator");
 	printf("%s\n    %s\n", "[expression] or [expression]",
 	    "either preceding or succeding operand has to be true");
-	printf("%s\n    %s\n", "( [expression] )",
+	printf("%s\n    %s\n", "([expression])",
 	    "expressions contained within are grouped for the use of other "
 	    "operands");
 	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]",

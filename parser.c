@@ -168,8 +168,7 @@ create_int_data(char *original_data, char *comparison) {
 	else if (original_data[0] == '-') {
 		parse_data++;
 		*comparison = '-';
-	}
-	else {
+	} else {
 		*comparison = ' ';
 	}
 
@@ -350,8 +349,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 			if (errno) {
 				errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1,
 				    strerror(errno));
-			}
-			else {
+			} else {
 				errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1,
 				    ENTRY_NONEXISTENT);
 			}
@@ -371,8 +369,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 			if (errno) {
 				errx(3, ARG1_USER_ERR_MSG, next_arg_index - 1,
 				    strerror(errno));
-			}
-			else {
+			} else {
 				errx(3, ARG1_USER_ERR_MSG, next_arg_index - 1,
 				    ENTRY_NONEXISTENT);
 			}
@@ -505,7 +502,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 		next_arg_index = start_position;
 
 		/* allocate parameters */
-		action->params = malloc(sizeof (char*) * (exec_args_count + 1));
+		action->params = malloc(sizeof (char *) * (exec_args_count + 1));
 		if (!action->params) {
 			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
@@ -525,8 +522,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 		action = create_action();
 		action->do_action = do_print;
 		append_action(args_bundle, action);
-	}
-	else {
+	} else {
 		/* no match found => not an action */
 		return (0);
 	}
@@ -555,8 +551,7 @@ try_parse_option(args_bundle_t *args_bundle) {
 	else if (0 == strcmp(current_argument, "-maxdepth")) {
 		increment_current_argument(INT_EXPECTED);
 		args_bundle->max_depth = atol(current_argument);
-	}
-	else {
+	} else {
 		/* no match found => not an option */
 		return (0);
 	}
@@ -571,7 +566,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 		increment_current_argument(NULL);
 
 		if (0 == strcmp(current_argument, "(")) {
-			/* start a new eval. tree in the ( ) */
+			/* start a new eval. tree in the () */
 			condition = build_condition_tree(args_bundle);
 			break;
 		}
@@ -596,8 +591,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 			errx(1, ARG1_ERR_MSG, next_arg_index - 1,
 			    PARENTH_UNEXPECTED);
 			break;
-		}
-		else {
+		} else {
 			errx(1, ARG2_ERR_MSG, next_arg_index - 1,
 			    UNKNOWN_TOKEN, current_argument);
 		}
@@ -634,8 +628,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 			if (!condition_buffer) {
 				/* buffer is empty => fill the buffer */
 				condition_buffer = condition_temp;
-			}
-			else {
+			} else {
 				/* buffer is not empty => merge the buffer */
 				/*     with main condition via 'OR' operation */
 				/*     and refill the buffer */
@@ -645,8 +638,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 			}
 
 			condition_temp = NULL;
-		}
-		else {
+		} else {
 			/* implicit 'AND' operation between arguments */
 			if (strcmp(current_argument, "and")) {
 				/* current token isn't 'AND' */
@@ -666,8 +658,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 				condition = merge_condition_nodes(
 				    condition, condition_temp,
 				    check_and);
-			}
-			else {
+			} else {
 				/* buffer is not empty */
 				/*     => apply operation 'AND' with */
 				/*     the right node */

@@ -38,7 +38,7 @@ dispose_node_list(node_list_t *list) {
 		return;
 	}
 
-	for (current_node = list->first; current_node;) {
+	for (current_node = list->first; current_node; ) {
 		current_node_next = current_node->next;
 		free(current_node->local_name);
 		free(current_node);
@@ -79,8 +79,7 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	/* insert node to the list */
 	if (0 == list->count) {
 		list->first = new_node;
-	}
-	else {
+	} else {
 		list->last->next = new_node;
 	}
 	list->last = new_node;
@@ -181,7 +180,7 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 		    path, file_entry->d_name);
 
 		/* get absolute path */
-		real_path = realpath(local_path, (char*)NULL);
+		real_path = realpath(local_path, NULL);
 
 		/* get file status */
 		if (args_bundle->follow_links &&
@@ -216,8 +215,7 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 				/* match file with find conditions */
 				result = args_bundle->condition->do_check(
 				    args_bundle->condition, file_info);
-			}
-			else {
+			} else {
 				/* no condition => match everything */
 				result = 1;
 			}

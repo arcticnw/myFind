@@ -97,8 +97,7 @@ check_name(condition_t *condition, file_info_bundle_t file) {
 	if (!condition->params.is_case_sensitive) {
 		file_name = copy_string(file.file_entry->d_name);
 		string_to_lower(file_name);
-	}
-	else {
+	} else {
 		file_name = file.file_entry->d_name;
 	}
 
@@ -120,12 +119,12 @@ check_atime(condition_t *condition, file_info_bundle_t file) {
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 
-	return ( compare_time(
+	return (compare_time(
 	    file.time_now,
 	    file.file_entry_stat.st_atime,
 	    condition->data2.long_data,
 	    condition->data1.long_data,
-	    condition->params.compare_method) );
+	    condition->params.compare_method));
 }
 
 int
@@ -136,12 +135,12 @@ check_mtime(condition_t *condition, file_info_bundle_t file) {
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 
-	return ( compare_time(
+	return (compare_time(
 	    file.time_now,
 	    file.file_entry_stat.st_mtime,
 	    condition->data2.long_data,
 	    condition->data1.long_data,
-	    condition->params.compare_method) );
+	    condition->params.compare_method));
 }
 
 int
@@ -152,12 +151,12 @@ check_ctime(condition_t *condition, file_info_bundle_t file) {
 	/* data1 = compared time */
 	/* data2 = accurancy (divisor) */
 
-	return ( compare_time(
+	return (compare_time(
 	    file.time_now,
 	    file.file_entry_stat.st_ctime,
 	    condition->data2.long_data,
 	    condition->data1.long_data,
-	    condition->params.compare_method) );
+	    condition->params.compare_method));
 }
 
 int

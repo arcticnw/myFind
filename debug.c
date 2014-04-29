@@ -45,8 +45,7 @@ void dumpData(data_t data, content_t content) {
 	}
 	else if (content == NONE) {
 		printf("-");
-	}
-	else {
+	} else {
 		printf("?");
 	}
 }
@@ -68,8 +67,7 @@ void dumpCondition(condition_t * c) {
 	}
 	else if (c->do_check == check_false) {
 		printf("<False> /*");
-	}
-	else {
+	} else {
 		printf("<Fct> (");
 	}
 
@@ -83,8 +81,7 @@ void dumpCondition(condition_t * c) {
 	}
 	else if (c->do_check == check_not) {
 		printf(" /*");
-	}
-	else {
+	} else {
 		printf(", ");
 	}
 
@@ -101,8 +98,7 @@ void dumpCondition(condition_t * c) {
 	}
 	else if (c->do_check == check_not) {
 		printf("*/)");
-	}
-	else {
+	} else {
 		printf(")");
 	}
 }
@@ -112,15 +108,13 @@ void dumpAction(action_t * action) {
 
 	if (action->do_action) {
 		printf("<Fct[%d]> (", action->param_count);
-	}
-	else {
+	} else {
 		printf("<Null[%d]> (", action->param_count);
 	}
 
 	if (!action->params) {
 	    printf("#NULL#");
-	}
-	else {
+	} else {
 		for (i = 0; i < action->param_count; i++) {
 		    printf("%s, ", action->params[i]);
 		}
