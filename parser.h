@@ -73,7 +73,7 @@ create_int_data(char *original_data, char *comparison);
 condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2, 
     check_t checker);
-	
+
 
 /* this function initializes new empty condition                              */
 condition_t *

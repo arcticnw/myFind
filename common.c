@@ -9,33 +9,28 @@
 
 
 void 
-string_to_lower(char *data)
-{
+string_to_lower(char *data) {
     int i;
-    for(i = 0; data[i] != '\0'; i++)
-    {
+    for(i = 0; data[i] != '\0'; i++) {
         data[i] = tolower(data[i]);
     }
 }
 
 
 char * 
-copy_string(const char *source)
-{
+copy_string(const char *source) {
 	char * target;
-	
-	if (!source) 
-	{
+
+	if (!source)  {
 		return (NULL);
 	}
-	
+
 	target = malloc(sizeof(char) * (strlen(source) + 1));
-	
-	if (!target)
-	{
+
+	if (!target) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
-	
+
 	strcpy(target, source);
 	return (target);
 }

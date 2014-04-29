@@ -23,8 +23,7 @@ int next_arg_index;
 char *current_argument;
 
 args_bundle_t *
-parse_arguments(int argc, char **argv)
-{
+parse_arguments(int argc, char **argv) {
 	args_bundle_t *args_bundle;
 
 	argument_count = argc;
@@ -36,8 +35,7 @@ parse_arguments(int argc, char **argv)
 	args_bundle->path = argument_data[1];
 	args_bundle->condition = build_condition_tree(args_bundle);
 
-	if (!args_bundle->action)
-	{
+	if (!args_bundle->action) {
 		append_action(args_bundle, create_default_action());
 	}
 
@@ -49,12 +47,10 @@ parse_arguments(int argc, char **argv)
 
 
 args_bundle_t *
-initialize_args_bundle()
-{
+initialize_args_bundle() {
 	args_bundle_t *args_bundle;
 	args_bundle = malloc(sizeof(args_bundle_t));
-	if (!args_bundle)
-	{
+	if (!args_bundle) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	args_bundle->follow_links = 0;
@@ -71,8 +67,7 @@ initialize_args_bundle()
 
 
 action_t *
-create_default_action()
-{
+create_default_action() {
 	action_t *action;
 	action = create_action();
 	action->do_action = do_print;
@@ -81,14 +76,11 @@ create_default_action()
 
 
 void
-dispose_args_bundle(args_bundle_t *args_bundle)
-{
-	if (args_bundle->condition)
-	{
+dispose_args_bundle(args_bundle_t *args_bundle) {
+	if (args_bundle->condition) {
 		dispose_condition(args_bundle->condition);
 	}
-	if (args_bundle->action)
-	{
+	if (args_bundle->action) {
 		dispose_action(args_bundle->action);
 	}
 
@@ -97,28 +89,23 @@ dispose_args_bundle(args_bundle_t *args_bundle)
 
 
 void
-dispose_condition(condition_t *condition)
-{
+dispose_condition(condition_t *condition) {
 	assert(condition);
 
 	condition->do_check = NULL;
 
-	if (condition->data1_content == STRING)
-	{
+	if (condition->data1_content == STRING) {
 		free(condition->data1.string_data);
 	}
-	else if (condition->data1_content == CONDITION)
-	{
+	else if (condition->data1_content == CONDITION) {
 		dispose_condition(condition->data1.condition_data);
 	}
 	condition->data1_content = NONE;
 
-	if (condition->data2_content == STRING)
-	{
+	if (condition->data2_content == STRING) {
 		free(condition->data2.string_data);
 	}
-	else if (condition->data2_content == CONDITION)
-	{
+	else if (condition->data2_content == CONDITION) {
 		dispose_condition(condition->data2.condition_data);
 	}
 	condition->data2_content = NONE;
@@ -128,23 +115,19 @@ dispose_condition(condition_t *condition)
 
 
 void
-dispose_action(action_t *action)
-{
+dispose_action(action_t *action) {
 	int i;
 
 	assert(action);
 
 	action->do_action = NULL;
-	if (action->params)
-	{
-		for(i = 0; i < action->param_count; i++)
-		{
+	if (action->params) {
+		for(i = 0; i < action->param_count; i++) {
 			free(action->params[i]);
 		}
 		free(action->params);
 	}
-	if (action->next)
-	{
+	if (action->next) {
 		dispose_action(action->next);
 	}
 	free(action);
@@ -152,8 +135,7 @@ dispose_action(action_t *action)
 
 
 data_t
-create_condition_data(condition_t *condition)
-{
+create_condition_data(condition_t *condition) {
 	data_t data;
 	data.condition_data = condition;
 
@@ -162,8 +144,7 @@ create_condition_data(condition_t *condition)
 
 
 data_t
-create_string_data(const char *original_data)
-{
+create_string_data(const char *original_data) {
 	data_t data;
 	data.string_data = copy_string(original_data);
 
@@ -172,8 +153,7 @@ create_string_data(const char *original_data)
 
 
 data_t
-create_int_data(char *original_data, char *comparison)
-{
+create_int_data(char *original_data, char *comparison) {
 	char *parse_data = original_data;
 	long value;
 	data_t data;
@@ -181,18 +161,15 @@ create_int_data(char *original_data, char *comparison)
 	assert(original_data);
 	assert(strlen(original_data));
 
-	if (original_data[0] == '+')
-	{
+	if (original_data[0] == '+') {
 		parse_data++;
 		*comparison = '+';
 	}
-	else if (original_data[0] == '-')
-	{
+	else if (original_data[0] == '-') {
 		parse_data++;
 		*comparison = '-';
 	}
-	else
-	{
+	else {
 		*comparison = ' ';
 	}
 
@@ -205,8 +182,7 @@ create_int_data(char *original_data, char *comparison)
 
 condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2,
-    check_t checker)
-{
+    check_t checker) {
 	condition_t *condition = make_empty_condition(checker);
 	condition->data1 = create_condition_data(condition1);
 	condition->data1_content = CONDITION;
@@ -218,11 +194,9 @@ merge_condition_nodes(condition_t *condition1, condition_t *condition2,
 
 
 condition_t *
-make_empty_condition(check_t checker)
-{
+make_empty_condition(check_t checker) {
 	condition_t *condition = malloc(sizeof(condition_t));
-	if (!condition)
-	{
+	if (!condition) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 
@@ -237,8 +211,7 @@ make_empty_condition(check_t checker)
 
 
 condition_t *
-make_string_condition(check_t checker)
-{
+make_string_condition(check_t checker) {
 	condition_t *condition;
 
 	condition = make_empty_condition(checker);
@@ -252,8 +225,7 @@ make_string_condition(check_t checker)
 
 
 condition_t *
-make_string_string_condition(check_t checker)
-{
+make_string_string_condition(check_t checker) {
 	condition_t *condition;
 
 	condition = make_empty_condition(checker);
@@ -271,8 +243,7 @@ make_string_string_condition(check_t checker)
 
 
 condition_t *
-make_int_condition(check_t checker)
-{
+make_int_condition(check_t checker) {
 	condition_t *condition;
 
 	condition = make_empty_condition(checker);
@@ -287,12 +258,10 @@ make_int_condition(check_t checker)
 
 
 action_t *
-create_action()
-{
+create_action() {
 	action_t *action;
 	action = malloc(sizeof(action_t));
-	if (!action)
-	{
+	if (!action) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	action->do_action = NULL;
@@ -304,22 +273,19 @@ create_action()
 
 
 void
-append_action(args_bundle_t *args_bundle, action_t *action)
-{
+append_action(args_bundle_t *args_bundle, action_t *action) {
 	action_t *current_action;
 	assert(args_bundle);
 
 	/* if there's no action yet, append directly */
-	if (!args_bundle->action)
-	{
+	if (!args_bundle->action) {
 		args_bundle->action = action;
 		return;
 	}
 
 	/* find the last action */
 	current_action = args_bundle->action;
-	while(current_action->next)
-	{
+	while(current_action->next) {
 		current_action = current_action->next;
 	}
 
@@ -329,19 +295,16 @@ append_action(args_bundle_t *args_bundle, action_t *action)
 
 
 struct stat
-retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle)
-{
+retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle) {
 	struct stat file_entry_stat;
 
 	if (args_bundle->follow_links &&
-		stat(file_name, &file_entry_stat))
-	{
+		stat(file_name, &file_entry_stat)) {
 		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name,
 		    strerror(errno));
 	}
 	if (!args_bundle->follow_links &&
-		lstat(file_name, &file_entry_stat))
-	{
+		lstat(file_name, &file_entry_stat)) {
 		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name,
 		    strerror(errno));
 	}
@@ -351,55 +314,44 @@ retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle)
 
 
 condition_t *
-try_parse_condition(args_bundle_t *args_bundle)
-{
+try_parse_condition(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 	struct stat file_entry_stat;
 	char * file_name;
 	struct group *file_group;
 	struct passwd *file_user;
 
-	if (!strcmp(current_argument, "true"))
-	{
+	if (!strcmp(current_argument, "true")) {
 		condition = make_empty_condition(check_true);
 	}
-	else if (!strcmp(current_argument, "false"))
-	{
+	else if (!strcmp(current_argument, "false")) {
 		condition = make_empty_condition(check_false);
 	}
-	else if (!strcmp(current_argument, "name"))
-	{
+	else if (!strcmp(current_argument, "name")) {
 		condition = make_string_condition(check_name);
 		condition->params.is_case_sensitive = 1;
 	}
-	else if (!strcmp(current_argument, "iname"))
-	{
+	else if (!strcmp(current_argument, "iname")) {
 		condition = make_string_condition(check_name);
 		string_to_lower(condition->data1.string_data);
 		condition->params.is_case_sensitive = 0;
 	}
-	else if (!strcmp(current_argument, "empty"))
-	{
+	else if (!strcmp(current_argument, "empty")) {
 		condition = make_empty_condition(check_empty);
 	}
-	else if (!strcmp(current_argument, "gid"))
-	{
+	else if (!strcmp(current_argument, "gid")) {
 		condition = make_int_condition(check_gid);
 	}
-	else if (!strcmp(current_argument, "group"))
-	{
+	else if (!strcmp(current_argument, "group")) {
 		increment_current_argument(STR_EXPECTED);
 		errno = 0;
 		file_group = getgrnam(current_argument);
-		if (!file_group)
-		{
-			if (errno)
-			{
+		if (!file_group) {
+			if (errno) {
 				errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1,
 				    strerror(errno));
 			}
-			else
-			{
+			else {
 				errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1,
 				    ENTRY_NONEXISTENT);
 			}
@@ -408,24 +360,19 @@ try_parse_condition(args_bundle_t *args_bundle)
 		condition->data1_content = LONG;
 		condition->data1.long_data = file_group->gr_gid;
 	}
-	else if (!strcmp(current_argument, "uid"))
-	{
+	else if (!strcmp(current_argument, "uid")) {
 		condition = make_int_condition(check_uid);
 	}
-	else if (!strcmp(current_argument, "user"))
-	{
+	else if (!strcmp(current_argument, "user")) {
 		increment_current_argument(STR_EXPECTED);
 		errno = 0;
 		file_user = getpwnam(current_argument);
-		if (!file_user)
-		{
-			if (errno)
-			{
+		if (!file_user) {
+			if (errno) {
 				errx(3, ARG1_USER_ERR_MSG, next_arg_index - 1,
 				    strerror(errno));
 			}
-			else
-			{
+			else {
 				errx(3, ARG1_USER_ERR_MSG, next_arg_index - 1,
 				    ENTRY_NONEXISTENT);
 			}
@@ -434,24 +381,20 @@ try_parse_condition(args_bundle_t *args_bundle)
 		condition->data1_content = LONG;
 		condition->data1.long_data = file_user->pw_uid;
 	}
-	else if (!strcmp(current_argument, "size"))
-	{
+	else if (!strcmp(current_argument, "size")) {
 		condition = make_int_condition(check_size);
 	}
-	else if (!strcmp(current_argument, "amin"))
-	{
+	else if (!strcmp(current_argument, "amin")) {
 		condition = make_int_condition(check_atime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "atime"))
-	{
+	else if (!strcmp(current_argument, "atime")) {
 		condition = make_int_condition(check_atime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "anewer"))
-	{
+	else if (!strcmp(current_argument, "anewer")) {
 		condition = make_empty_condition(check_atime);
 		condition->params.compare_method = '-';
 
@@ -467,20 +410,17 @@ try_parse_condition(args_bundle_t *args_bundle)
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "cmin"))
-	{
+	else if (!strcmp(current_argument, "cmin")) {
 		condition = make_int_condition(check_ctime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "ctime"))
-	{
+	else if (!strcmp(current_argument, "ctime")) {
 		condition = make_int_condition(check_ctime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "cnewer"))
-	{
+	else if (!strcmp(current_argument, "cnewer")) {
 		condition = make_empty_condition(check_ctime);
 		condition->params.compare_method = '-';
 
@@ -496,20 +436,17 @@ try_parse_condition(args_bundle_t *args_bundle)
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mmin"))
-	{
+	else if (!strcmp(current_argument, "mmin")) {
 		condition = make_int_condition(check_mtime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mtime"))
-	{
+	else if (!strcmp(current_argument, "mtime")) {
 		condition = make_int_condition(check_mtime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mnewer"))
-	{
+	else if (!strcmp(current_argument, "mnewer")) {
 		condition = make_empty_condition(check_mtime);
 		condition->params.compare_method = '-';
 
@@ -530,16 +467,14 @@ try_parse_condition(args_bundle_t *args_bundle)
 
 
 int
-try_parse_action(args_bundle_t *args_bundle)
-{
+try_parse_action(args_bundle_t *args_bundle) {
 	action_t *action;
 	int i;
 	int start_position;
 	int end_position;
 	int exec_args_count;
 
-	if (!strcmp(current_argument, "exec"))
-	{
+	if (!strcmp(current_argument, "exec")) {
 		/* create action */
 		action = create_action();
 		action->do_action = do_execute;
@@ -550,8 +485,7 @@ try_parse_action(args_bundle_t *args_bundle)
 		/* count the number of subsequent arguments until ';' */
 		for (exec_args_count = 0;
 		    strcmp(current_argument, ";");
-		    exec_args_count++)
-		{
+		    exec_args_count++) {
 			increment_current_argument(SEMICOL_EXPECTED);
 		}
 		/* the first cycle is comparing 'exec' to ';' */
@@ -559,8 +493,7 @@ try_parse_action(args_bundle_t *args_bundle)
 		exec_args_count--;
 
 		/* make sure there is something to run */
-		if (!exec_args_count)
-		{
+		if (!exec_args_count) {
 			errx(1, ARG1_ERR_MSG, next_arg_index - 1,
 			    STR_EXPECTED);
 		}
@@ -573,14 +506,12 @@ try_parse_action(args_bundle_t *args_bundle)
 
 		/* allocate parameters */
 		action->params = malloc(sizeof(char*) * (exec_args_count + 1));
-		if (!action->params)
-		{
+		if (!action->params) {
 			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
 
 		/* copy the literals */
-		for(i = 0; i < exec_args_count; i++)
-		{
+		for(i = 0; i < exec_args_count; i++) {
 			increment_current_argument(NULL);
 
 			action->params[i] = copy_string(current_argument);
@@ -590,14 +521,12 @@ try_parse_action(args_bundle_t *args_bundle)
 
 		next_arg_index = end_position;
 	}
-	else if (!strcmp(current_argument, "print"))
-	{
+	else if (!strcmp(current_argument, "print")) {
 		action = create_action();
 		action->do_action = do_print;
 		append_action(args_bundle, action);
 	}
-	else
-	{
+	else {
 		/* no match found => not an action */
 		return (0);
 	}
@@ -606,36 +535,28 @@ try_parse_action(args_bundle_t *args_bundle)
 
 
 int
-try_parse_option(args_bundle_t *args_bundle)
-{
-	if (!strcmp(current_argument, "-follow"))
-	{
+try_parse_option(args_bundle_t *args_bundle) {
+	if (!strcmp(current_argument, "-follow")) {
 		args_bundle->follow_links = 1;
 	}
-	else if (!strcmp(current_argument, "-nofollow"))
-	{
+	else if (!strcmp(current_argument, "-nofollow")) {
 		args_bundle->follow_links = 0;
 	}
-	else if (!strcmp(current_argument, "-ignorehidden"))
-	{
+	else if (!strcmp(current_argument, "-ignorehidden")) {
 		args_bundle->ignore_hidden = 1;
 	}
-	else if (!strcmp(current_argument, "-noignorehidden"))
-	{
+	else if (!strcmp(current_argument, "-noignorehidden")) {
 		args_bundle->ignore_hidden = 0;
 	}
-	else if (!strcmp(current_argument, "-mindepth"))
-	{
+	else if (!strcmp(current_argument, "-mindepth")) {
 		increment_current_argument(INT_EXPECTED);
 		args_bundle->min_depth = atol(current_argument);
 	}
-	else if (!strcmp(current_argument, "-maxdepth"))
-	{
+	else if (!strcmp(current_argument, "-maxdepth")) {
 		increment_current_argument(INT_EXPECTED);
 		args_bundle->max_depth = atol(current_argument);
 	}
-	else
-	{
+	else {
 		/* no match found => not an option */
 		return (0);
 	}
@@ -643,49 +564,40 @@ try_parse_option(args_bundle_t *args_bundle)
 }
 
 
-condition_t *build_condition_node(args_bundle_t *args_bundle)
-{
+condition_t *build_condition_node(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 
-	while (next_arg_index < argument_count)
-	{
+	while (next_arg_index < argument_count) {
 		increment_current_argument(NULL);
 
-		if (!strcmp(current_argument, "("))
-		{
+		if (!strcmp(current_argument, "(")) {
 			/* start a new eval. tree in the ( ) */
 			condition = build_condition_tree(args_bundle);
 			break;
 		}
 		else if (!strcmp(current_argument, "!") ||
-		    !strcmp(current_argument, "not"))
-		{
+		    !strcmp(current_argument, "not")) {
 			condition = make_empty_condition(check_not);
 			condition->data1 = create_condition_data(
 			    build_condition_node(args_bundle));
 			condition->data1_content = CONDITION;
 			break;
 		}
-		else if ((condition = try_parse_condition(args_bundle)))
-		{
+		else if ((condition = try_parse_condition(args_bundle))) {
 			break;
 		}
-		else if (try_parse_action(args_bundle))
-		{
+		else if (try_parse_action(args_bundle)) {
 			/* do nothing */
 		}
-		else if (try_parse_option(args_bundle))
-		{
+		else if (try_parse_option(args_bundle)) {
 			/* do nothing */
 		}
-		else if (!strcmp(current_argument, ")"))
-		{
+		else if (!strcmp(current_argument, ")")) {
 			errx(1, ARG1_ERR_MSG, next_arg_index - 1,
 			    PARENTH_UNEXPECTED);
 			break;
 		}
-		else
-		{
+		else {
 			errx(1, ARG2_ERR_MSG, next_arg_index - 1,
 			    UNKNOWN_TOKEN, current_argument);
 		}
@@ -694,8 +606,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 }
 
 
-condition_t *build_condition_tree(args_bundle_t *args_bundle)
-{
+condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 	condition_t *condition_buffer = NULL;
 	condition_t *condition_temp = NULL;
@@ -703,35 +614,28 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 	/* Fetch the first condition explicitly */
 	condition = build_condition_node(args_bundle);
 
-	if (!condition)
-	{
+	if (!condition) {
 		return (NULL);
 	}
 
-	while (next_arg_index < argument_count)
-	{
+	while (next_arg_index < argument_count) {
 		increment_current_argument(NULL);
 
-		if (!strcmp(current_argument, ")"))
-		{
+		if (!strcmp(current_argument, ")")) {
 			break;
 		}
-		else if (!strcmp(current_argument, "or"))
-		{
+		else if (!strcmp(current_argument, "or")) {
 			condition_temp = build_condition_node(args_bundle);
-			if (!condition_temp)
-			{
+			if (!condition_temp) {
 				errx(1, ARG1_ERR_MSG, next_arg_index,
 				    EXPR_EXPECTED);
 			}
 
-			if (!condition_buffer)
-			{
+			if (!condition_buffer) {
 				/* buffer is empty => fill the buffer */
 				condition_buffer = condition_temp;
 			}
-			else
-			{
+			else {
 				/* buffer is not empty => merge the buffer */
 				/*     with main condition via 'OR' operation */
 				/*     and refill the buffer */
@@ -742,24 +646,20 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 
 			condition_temp = NULL;
 		}
-		else
-		{
+		else {
 			/* implicit 'AND' operation between arguments */
-			if (strcmp(current_argument, "and"))
-			{
+			if (strcmp(current_argument, "and")) {
 				/* current token isn't 'AND' */
 				/*     => condition consumed => undo */
 				next_arg_index--;
 			}
 			condition_temp = build_condition_node(args_bundle);
 
-			if (!condition_temp)
-			{
+			if (!condition_temp) {
 				break;
 			}
 
-			if (!condition_buffer)
-			{
+			if (!condition_buffer) {
 				/* buffer is empty */
 				/*     => apply operation 'AND' with */
 				/*     the left node */
@@ -767,8 +667,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 				    condition, condition_temp,
 				    check_and);
 			}
-			else
-			{
+			else {
 				/* buffer is not empty */
 				/*     => apply operation 'AND' with */
 				/*     the right node */
@@ -781,8 +680,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 		}
 	}
 
-	if (condition_buffer)
-	{
+	if (condition_buffer) {
 		/* buffer isn't empty => merge buffer with main condition */
 		/*     using 'OR' operation */
 		condition = merge_condition_nodes(
@@ -795,10 +693,8 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle)
 
 
 void
-increment_current_argument(char * expected)
-{
-	if (next_arg_index >= argument_count)
-	{
+increment_current_argument(char * expected) {
+	if (next_arg_index >= argument_count) {
 		errx(1, ARG1_ERR_MSG, next_arg_index, expected);
 	}
 	current_argument = argument_data[next_arg_index];

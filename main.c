@@ -7,38 +7,38 @@
 #include "crawler.h"
 #include "debug.h"
 
-void usage(const char *name)
-{ /*                                                                            v*/
+void
+usage(const char *name) { /*                                                                            v*/
 	printf("Usage: %s path [options] [expression [expression [..]]]\n\n", 
 	    name);
-	
+
 	/* options */
 	printf("[options]:\n\n");
-	
+
 	/* follow, no follow */
 	printf("%s\n    %s\n", "-follow",
 	    "will resolve symlinks and will dive into directory symlinks");
 	printf("%s\n    %s\n    %s\n", "-nofollow", 
 	    "won't resolve symlinks and won't dive into directory symlinks",
 	    "default");
-		
+
 	/* ignore hidden, no ignore hidden */
 	printf("%s\n    %s\n    %s\n", "-ignorehidden", 
 	    "will ignore hidden files", 
 	    "default");
 	printf("%s\n    %s\n", "-noignorehidden",
 	    "won't ignore hidden files");
-	
+
 	/* min depth, max depth*/
 	printf("%s\n    %s\n", "-mindepth n", 
 	    "will ignore hidden files");
 	printf("%s\n    %s\n", "-maxdepth n",
 	    "won't ignore hidden files");
-	
+
 
 	/* expressions */
 	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
-	
+
 	/* name, iname*/
 	printf("%s\n    %s\n", "name filename", 
 	    "will match files with filename pattern");
@@ -46,7 +46,7 @@ void usage(const char *name)
 	    "will match files with filename pattern",
 	    "case insensitive");
 	printf("\n");
-		
+
 	/* amin, atime, anewer */
 	printf("%s\n    %s\n", "amin n",
 		"will match files accessed n minutes ago");
@@ -55,7 +55,7 @@ void usage(const char *name)
 	printf("%s\n    %s\n", "anewer file",
 		"will match files accessed more recently than file");
 	printf("\n");
-		
+
 	/* cmin, ctime, cnewer */
 	printf("%s\n    %s\n", "cmin n",
 		"will match files created n minutes ago");
@@ -64,7 +64,7 @@ void usage(const char *name)
 	printf("%s\n    %s\n", "cnewer file",
 		"will match files created more recently than file");
 	printf("\n");
-		
+
 	/* mmin, mtime, mnewer */
 	printf("%s\n    %s\n", "mmin n",
 		"will match files modified n minutes ago");
@@ -73,7 +73,7 @@ void usage(const char *name)
 	printf("%s\n    %s\n", "mnewer file",
 		"will match files modified more recently than file");
 	printf("\n");
-		
+
 	printf("%s\n    %s\n", "empty", 
 		"will match empty regular files and empty directories");
 	printf("%s\n    %s\n", "size n", 
@@ -90,13 +90,13 @@ void usage(const char *name)
 		"will match file user with provided name");
 	printf("\n");
 
-	
+
 	/* about numeric arguments */
 	printf("\nNumeric arguments can be specified as:\n"
 	    "+n   for expressing 'greather than' n\n"
 	    " n   for expressing 'equal to' n\n"
 	    "-n   for expressing 'less than' n\n\n\n");
-	
+
 	/* boolean operations */
 	printf("%s\n    %s\n", "true", 
 	    "always passes");
@@ -113,7 +113,7 @@ void usage(const char *name)
 	    "operands");
 	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]", 
 	    "following expression will be negated");
-	
+
 	/* actions */
 	printf("\n");
 	printf("%s\n    %s\n", "print", 
@@ -131,14 +131,13 @@ void usage(const char *name)
 	printf("\n\n");
 }
 
-int main(int argc, char **argv)
-{
+int
+main(int argc, char **argv) {
     args_bundle_t *args_bundle;
 
     printf("** hello\n");
     
-    if (argc < 2)
-    {
+    if (argc < 2) {
         usage(argv[0]);
         return 0;
     }

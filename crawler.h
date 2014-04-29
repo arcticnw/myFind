@@ -49,7 +49,7 @@ int
 try_add_node(node_list_t *list, const char *local_name, const ino_t node_id, 
     node_t ** conflictingNode);
 
-	
+
 /* this function goes through the linked list of actions and applies their    */
 /*     do_action function-pointer on the file_info_bundle_t                               */
 void 
