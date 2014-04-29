@@ -332,6 +332,26 @@ append_action(args_bundle_t *args_bundle, action_t *action)
 }
 
 
+struct stat
+retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle)
+{
+	struct stat file_entry_stat;
+	
+	if (args_bundle->follow_links && 
+		stat(file_name, &file_entry_stat))
+	{
+		errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+	}
+	if (!args_bundle->follow_links && 
+		lstat(file_name, &file_entry_stat))
+	{
+		errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
+	}
+	
+	return (file_entry_stat);
+}
+
+
 condition_t *
 try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 {
@@ -376,31 +396,79 @@ try_parse_condition(char *current_argument, args_bundle_t *args_bundle)
 	{
 		condition = make_empty_condition();
 		condition->do_check = check_atime;
-
+		condition->params.compare_method = '-';
+		
 		argument_range_check("String argument expected");
 
 		file_name = copy_string(argument_data[next_arg_index]);
 		next_arg_index++;
 
-		if (args_bundle->follow_links && 
-		    stat(file_name, &file_entry_stat))
-		{
-			errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
-		}
-		if (!args_bundle->follow_links && 
-		    lstat(file_name, &file_entry_stat))
-		{
-			errx(2, ARG2_FILE_ERR_MSG, next_arg_index--, file_name, strerror(errno));
-		}
+		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
 
 		condition->data1.long_data = file_entry_stat.st_atime;
 		condition->data1_content = LONG;
-		
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
-		
+	}
+	else if (!strcmp(current_argument, "cmin"))
+	{
+		condition = make_int_condition(check_ctime);
+		condition->data2.long_data = 60; /* comparing by minutes */
+		condition->data2_content = LONG;
+	} 
+	else if (!strcmp(current_argument, "ctime"))
+	{
+		condition = make_int_condition(check_ctime);
+		condition->data2.long_data = 60*60*24; /* comparing by days */
+		condition->data2_content = LONG;
+	}
+	else if (!strcmp(current_argument, "cnewer"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_ctime;
 		condition->params.compare_method = '-';
+		
+		argument_range_check("String argument expected");
 
+		file_name = copy_string(argument_data[next_arg_index]);
+		next_arg_index++;
+
+		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
+
+		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1_content = LONG;
+		condition->data2.long_data = 1;
+		condition->data2_content = LONG;
+	}
+	else if (!strcmp(current_argument, "mmin"))
+	{
+		condition = make_int_condition(check_mtime);
+		condition->data2.long_data = 60; /* comparing by minutes */
+		condition->data2_content = LONG;
+	} 
+	else if (!strcmp(current_argument, "mtime"))
+	{
+		condition = make_int_condition(check_mtime);
+		condition->data2.long_data = 60*60*24; /* comparing by days */
+		condition->data2_content = LONG;
+	}
+	else if (!strcmp(current_argument, "mnewer"))
+	{
+		condition = make_empty_condition();
+		condition->do_check = check_mtime;
+		condition->params.compare_method = '-';
+		
+		argument_range_check("String argument expected");
+
+		file_name = copy_string(argument_data[next_arg_index]);
+		next_arg_index++;
+
+		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
+
+		condition->data1.long_data = file_entry_stat.st_atime;
+		condition->data1_content = LONG;
+		condition->data2.long_data = 1;
+		condition->data2_content = LONG;
 	}
 	return (condition);
 }
@@ -489,7 +557,7 @@ try_parse_option(char *current_argument, args_bundle_t *args_bundle)
 	{
 		args_bundle->follow_links = 1;
 	}
-	else if (!strcmp(current_argument, "-nofollow"))
+	else if (!strcmp(current_argument, "-no-follow"))
 	{
 		args_bundle->follow_links = 0;
 	}
@@ -497,7 +565,7 @@ try_parse_option(char *current_argument, args_bundle_t *args_bundle)
 	{
 		args_bundle->ignore_hidden = 1;
 	}
-	else if (!strcmp(current_argument, "-noignore-hidden"))
+	else if (!strcmp(current_argument, "-no-ignore-hidden"))
 	{
 		args_bundle->ignore_hidden = 0;
 	}

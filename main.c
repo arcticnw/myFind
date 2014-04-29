@@ -13,25 +13,68 @@ void usage(const char *name)
 	    name);
 	
 	/* options */
-	printf("[options]:\n");
+	printf("[options]:\n\n");
+	
+	/* -follow, -nofollow */
 	printf("%s\n    %s\n", "-follow",
 	    "will resolve symlinks and will dive into directory symlinks");
-	printf("%s\n    %s\n    %s\n", "-nofollow", 
+	printf("%s\n    %s\n    %s\n", "-no-follow", 
 	    "won't resolve symlinks and won't dive into directory symlinks",
 	    "default");
+		
+	/* -ignore-hidden, -no-ignore-hidden */
 	printf("%s\n    %s\n    %s\n", "-ignore-hidden", 
 	    "will ignore hidden files", 
 	    "default");
-	printf("%s\n    %s\n", "-noignore-hidden",
+	printf("%s\n    %s\n", "-no-ignore-hidden",
 	    "won't ignore hidden files");
+	printf("\n\n");
 	
+	/* about numeric arguments */
+	printf("Numeric arguments can be specified as:\n"
+	    "+n   for expressing 'greather than' n\n"
+	    " n   for expressing 'equal to' n\n"
+	    "-n   for expressing 'less than' n\n");
+
 	/* expressions */
-	printf("\n[expression]:\n");
+	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
+	
+	/* name, iname*/
 	printf("%s\n    %s\n", "name filename", 
-	    "will match files to filename pattern");
+	    "will match files with filename pattern");
 	printf("%s\n    %s\n    %s\n", "iname filename", 
-	    "will match files to filename pattern",
+	    "will match files with filename pattern",
 	    "case insensitive");
+	printf("\n");
+		
+	/* amin, atime, anewer */
+	printf("%s\n    %s\n", "amin n"
+		"will match files accessed n minutes ago");
+	printf("%s\n    %s\n", "atime n"
+		"will match files accessed n days ago");
+	printf("%s\n    %s\n", "anewer file"
+		"will match files accessed more recently than file");
+	printf("\n");
+		
+	/* cmin, ctime, cnewer */
+	printf("%s\n    %s\n", "cmin n"
+		"will match files created n minutes ago");
+	printf("%s\n    %s\n", "ctime n"
+		"will match files created n days ago");
+	printf("%s\n    %s\n", "cnewer file"
+		"will match files created more recently than file");
+	printf("\n");
+		
+	/* mmin, mtime, mnewer */
+	printf("%s\n    %s\n", "mmin n"
+		"will match files modified n minutes ago");
+	printf("%s\n    %s\n", "mtime n"
+		"will match files modified n days ago");
+	printf("%s\n    %s\n", "mnewer file"
+		"will match files modified more recently than file");
+	printf("\n");
+		
+	/* boolean operations */
 	printf("%s\n    %s\n", "true", 
 	    "always passes");
 	printf("%s\n    %s\n", "false", 

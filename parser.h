@@ -99,6 +99,11 @@ void
 append_action(args_bundle_t *args_bundle, action_t *action);
 
 
+/**/
+struct stat
+retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle);
+
+
 /* this function tries to make and return a condition from provided literal,  */
 /*     if no such condition is made, NULL is returned                         */
 condition_t *
