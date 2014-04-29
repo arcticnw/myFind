@@ -121,7 +121,7 @@ void dumpAction(action_t * action) {
 	    printf("#NULL#");
 	}
 	else {
-		for(i = 0; i < action->param_count; i++) {
+		for (i = 0; i < action->param_count; i++) {
 		    printf("%s, ", action->params[i]);
 		}
 	}

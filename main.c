@@ -9,7 +9,7 @@
 
 void
 usage(const char *name) { /*                                                                            v*/
-	printf("Usage: %s path [options] [expression [expression [..]]]\n\n", 
+	printf("Usage: %s path [options] [expression [expression [..]]]\n\n",
 	    name);
 
 	/* options */
@@ -18,19 +18,19 @@ usage(const char *name) { /*                                                    
 	/* follow, no follow */
 	printf("%s\n    %s\n", "-follow",
 	    "will resolve symlinks and will dive into directory symlinks");
-	printf("%s\n    %s\n    %s\n", "-nofollow", 
+	printf("%s\n    %s\n    %s\n", "-nofollow",
 	    "won't resolve symlinks and won't dive into directory symlinks",
 	    "default");
 
 	/* ignore hidden, no ignore hidden */
-	printf("%s\n    %s\n    %s\n", "-ignorehidden", 
-	    "will ignore hidden files", 
+	printf("%s\n    %s\n    %s\n", "-ignorehidden",
+	    "will ignore hidden files",
 	    "default");
 	printf("%s\n    %s\n", "-noignorehidden",
 	    "won't ignore hidden files");
 
 	/* min depth, max depth*/
-	printf("%s\n    %s\n", "-mindepth n", 
+	printf("%s\n    %s\n", "-mindepth n",
 	    "will ignore hidden files");
 	printf("%s\n    %s\n", "-maxdepth n",
 	    "won't ignore hidden files");
@@ -40,9 +40,9 @@ usage(const char *name) { /*                                                    
 	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
 
 	/* name, iname*/
-	printf("%s\n    %s\n", "name filename", 
+	printf("%s\n    %s\n", "name filename",
 	    "will match files with filename pattern");
-	printf("%s\n    %s\n    %s\n", "iname filename", 
+	printf("%s\n    %s\n    %s\n", "iname filename",
 	    "will match files with filename pattern",
 	    "case insensitive");
 	printf("\n");
@@ -74,19 +74,19 @@ usage(const char *name) { /*                                                    
 		"will match files modified more recently than file");
 	printf("\n");
 
-	printf("%s\n    %s\n", "empty", 
+	printf("%s\n    %s\n", "empty",
 		"will match empty regular files and empty directories");
-	printf("%s\n    %s\n", "size n", 
+	printf("%s\n    %s\n", "size n",
 		"will compare the file size with provided number");
 	printf("\n");
 
-	printf("%s\n    %s\n", "gid n", 
+	printf("%s\n    %s\n", "gid n",
 		"will match file group id with provided number");
-	printf("%s\n    %s\n", "group name", 
+	printf("%s\n    %s\n", "group name",
 		"will match file group with provided name");
-	printf("%s\n    %s\n", "uid n", 
+	printf("%s\n    %s\n", "uid n",
 		"will match file user id with provided number");
-	printf("%s\n    %s\n", "user name", 
+	printf("%s\n    %s\n", "user name",
 		"will match file user with provided name");
 	printf("\n");
 
@@ -98,25 +98,25 @@ usage(const char *name) { /*                                                    
 	    "-n   for expressing 'less than' n\n\n\n");
 
 	/* boolean operations */
-	printf("%s\n    %s\n", "true", 
+	printf("%s\n    %s\n", "true",
 	    "always passes");
-	printf("%s\n    %s\n", "false", 
+	printf("%s\n    %s\n", "false",
 	    "never passes");
 	printf("\n");
-	printf("%s\n    %s\n    %s\n", "[expression] and [expression]", 
+	printf("%s\n    %s\n    %s\n", "[expression] and [expression]",
 	    "both preceding and following operands have to be true",
 	    "'and' operator has tighter associativity than 'or' operator");
-	printf("%s\n    %s\n", "[expression] or [expression]", 
+	printf("%s\n    %s\n", "[expression] or [expression]",
 	    "either preceding or succeding operand has to be true");
-	printf("%s\n    %s\n", "( [expression] )", 
+	printf("%s\n    %s\n", "( [expression] )",
 	    "expressions contained within are grouped for the use of other "
 	    "operands");
-	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]", 
+	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]",
 	    "following expression will be negated");
 
 	/* actions */
 	printf("\n");
-	printf("%s\n    %s\n", "print", 
+	printf("%s\n    %s\n", "print",
 	    "local path to the matching files will be printed to"
 	    "standard output");
 	printf(
@@ -127,34 +127,34 @@ usage(const char *name) { /*                                                    
 	    "(and local path) of the matched file\n"
 	    "    list of parameters has to be terminated with ';'",
 	    EXEC_REPLACE_TOKEN, EXEC_REPLACE_TOKEN);
-	    
+
 	printf("\n\n");
 }
 
 int
 main(int argc, char **argv) {
-    args_bundle_t *args_bundle;
+	args_bundle_t *args_bundle;
 
-    printf("** hello\n");
-    
-    if (argc < 2) {
-        usage(argv[0]);
-        return 0;
-    }
-    
-    printf("** parse\n");
-    
-    args_bundle = parse_arguments(argc, argv);
-    
-    dumpArgsBundle(args_bundle);
-    
-    printf("** crawl\n");
-    crawl(args_bundle);
-    
-    printf("** dispose\n");
-    dispose_args_bundle(args_bundle);
-    
-    printf("** bye\n");
-    
-    return 0;
+	printf("** hello\n");
+
+	if (argc < 2) {
+		usage(argv[0]);
+		return 0;
+	}
+
+	printf("** parse\n");
+
+	args_bundle = parse_arguments(argc, argv);
+
+	dumpArgsBundle(args_bundle);
+
+	printf("** crawl\n");
+	crawl(args_bundle);
+
+	printf("** dispose\n");
+	dispose_args_bundle(args_bundle);
+
+	printf("** bye\n");
+
+	return 0;
 }

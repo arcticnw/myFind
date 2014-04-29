@@ -49,7 +49,7 @@ parse_arguments(int argc, char **argv) {
 args_bundle_t *
 initialize_args_bundle() {
 	args_bundle_t *args_bundle;
-	args_bundle = malloc(sizeof(args_bundle_t));
+	args_bundle = malloc(sizeof (args_bundle_t));
 	if (!args_bundle) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
@@ -122,7 +122,7 @@ dispose_action(action_t *action) {
 
 	action->do_action = NULL;
 	if (action->params) {
-		for(i = 0; i < action->param_count; i++) {
+		for (i = 0; i < action->param_count; i++) {
 			free(action->params[i]);
 		}
 		free(action->params);
@@ -195,7 +195,7 @@ merge_condition_nodes(condition_t *condition1, condition_t *condition2,
 
 condition_t *
 make_empty_condition(check_t checker) {
-	condition_t *condition = malloc(sizeof(condition_t));
+	condition_t *condition = malloc(sizeof (condition_t));
 	if (!condition) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
@@ -260,7 +260,7 @@ make_int_condition(check_t checker) {
 action_t *
 create_action() {
 	action_t *action;
-	action = malloc(sizeof(action_t));
+	action = malloc(sizeof (action_t));
 	if (!action) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
@@ -321,28 +321,28 @@ try_parse_condition(args_bundle_t *args_bundle) {
 	struct group *file_group;
 	struct passwd *file_user;
 
-	if (!strcmp(current_argument, "true")) {
+	if (0 == strcmp(current_argument, "true")) {
 		condition = make_empty_condition(check_true);
 	}
-	else if (!strcmp(current_argument, "false")) {
+	else if (0 == strcmp(current_argument, "false")) {
 		condition = make_empty_condition(check_false);
 	}
-	else if (!strcmp(current_argument, "name")) {
+	else if (0 == strcmp(current_argument, "name")) {
 		condition = make_string_condition(check_name);
 		condition->params.is_case_sensitive = 1;
 	}
-	else if (!strcmp(current_argument, "iname")) {
+	else if (0 == strcmp(current_argument, "iname")) {
 		condition = make_string_condition(check_name);
 		string_to_lower(condition->data1.string_data);
 		condition->params.is_case_sensitive = 0;
 	}
-	else if (!strcmp(current_argument, "empty")) {
+	else if (0 == strcmp(current_argument, "empty")) {
 		condition = make_empty_condition(check_empty);
 	}
-	else if (!strcmp(current_argument, "gid")) {
+	else if (0 == strcmp(current_argument, "gid")) {
 		condition = make_int_condition(check_gid);
 	}
-	else if (!strcmp(current_argument, "group")) {
+	else if (0 == strcmp(current_argument, "group")) {
 		increment_current_argument(STR_EXPECTED);
 		errno = 0;
 		file_group = getgrnam(current_argument);
@@ -360,10 +360,10 @@ try_parse_condition(args_bundle_t *args_bundle) {
 		condition->data1_content = LONG;
 		condition->data1.long_data = file_group->gr_gid;
 	}
-	else if (!strcmp(current_argument, "uid")) {
+	else if (0 == strcmp(current_argument, "uid")) {
 		condition = make_int_condition(check_uid);
 	}
-	else if (!strcmp(current_argument, "user")) {
+	else if (0 == strcmp(current_argument, "user")) {
 		increment_current_argument(STR_EXPECTED);
 		errno = 0;
 		file_user = getpwnam(current_argument);
@@ -381,20 +381,20 @@ try_parse_condition(args_bundle_t *args_bundle) {
 		condition->data1_content = LONG;
 		condition->data1.long_data = file_user->pw_uid;
 	}
-	else if (!strcmp(current_argument, "size")) {
+	else if (0 == strcmp(current_argument, "size")) {
 		condition = make_int_condition(check_size);
 	}
-	else if (!strcmp(current_argument, "amin")) {
+	else if (0 == strcmp(current_argument, "amin")) {
 		condition = make_int_condition(check_atime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "atime")) {
+	else if (0 == strcmp(current_argument, "atime")) {
 		condition = make_int_condition(check_atime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "anewer")) {
+	else if (0 == strcmp(current_argument, "anewer")) {
 		condition = make_empty_condition(check_atime);
 		condition->params.compare_method = '-';
 
@@ -410,17 +410,17 @@ try_parse_condition(args_bundle_t *args_bundle) {
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "cmin")) {
+	else if (0 == strcmp(current_argument, "cmin")) {
 		condition = make_int_condition(check_ctime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "ctime")) {
+	else if (0 == strcmp(current_argument, "ctime")) {
 		condition = make_int_condition(check_ctime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "cnewer")) {
+	else if (0 == strcmp(current_argument, "cnewer")) {
 		condition = make_empty_condition(check_ctime);
 		condition->params.compare_method = '-';
 
@@ -436,17 +436,17 @@ try_parse_condition(args_bundle_t *args_bundle) {
 		condition->data2.long_data = 1;
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mmin")) {
+	else if (0 == strcmp(current_argument, "mmin")) {
 		condition = make_int_condition(check_mtime);
 		condition->data2.long_data = 60; /* comparing by minutes */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mtime")) {
+	else if (0 == strcmp(current_argument, "mtime")) {
 		condition = make_int_condition(check_mtime);
 		condition->data2.long_data = 60*60*24; /* comparing by days */
 		condition->data2_content = LONG;
 	}
-	else if (!strcmp(current_argument, "mnewer")) {
+	else if (0 == strcmp(current_argument, "mnewer")) {
 		condition = make_empty_condition(check_mtime);
 		condition->params.compare_method = '-';
 
@@ -474,7 +474,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 	int end_position;
 	int exec_args_count;
 
-	if (!strcmp(current_argument, "exec")) {
+	if (0 == strcmp(current_argument, "exec")) {
 		/* create action */
 		action = create_action();
 		action->do_action = do_execute;
@@ -505,13 +505,13 @@ try_parse_action(args_bundle_t *args_bundle) {
 		next_arg_index = start_position;
 
 		/* allocate parameters */
-		action->params = malloc(sizeof(char*) * (exec_args_count + 1));
+		action->params = malloc(sizeof (char*) * (exec_args_count + 1));
 		if (!action->params) {
 			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
 
 		/* copy the literals */
-		for(i = 0; i < exec_args_count; i++) {
+		for (i = 0; i < exec_args_count; i++) {
 			increment_current_argument(NULL);
 
 			action->params[i] = copy_string(current_argument);
@@ -521,7 +521,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 
 		next_arg_index = end_position;
 	}
-	else if (!strcmp(current_argument, "print")) {
+	else if (0 == strcmp(current_argument, "print")) {
 		action = create_action();
 		action->do_action = do_print;
 		append_action(args_bundle, action);
@@ -536,23 +536,23 @@ try_parse_action(args_bundle_t *args_bundle) {
 
 int
 try_parse_option(args_bundle_t *args_bundle) {
-	if (!strcmp(current_argument, "-follow")) {
+	if (0 == strcmp(current_argument, "-follow")) {
 		args_bundle->follow_links = 1;
 	}
-	else if (!strcmp(current_argument, "-nofollow")) {
+	else if (0 == strcmp(current_argument, "-nofollow")) {
 		args_bundle->follow_links = 0;
 	}
-	else if (!strcmp(current_argument, "-ignorehidden")) {
+	else if (0 == strcmp(current_argument, "-ignorehidden")) {
 		args_bundle->ignore_hidden = 1;
 	}
-	else if (!strcmp(current_argument, "-noignorehidden")) {
+	else if (0 == strcmp(current_argument, "-noignorehidden")) {
 		args_bundle->ignore_hidden = 0;
 	}
-	else if (!strcmp(current_argument, "-mindepth")) {
+	else if (0 == strcmp(current_argument, "-mindepth")) {
 		increment_current_argument(INT_EXPECTED);
 		args_bundle->min_depth = atol(current_argument);
 	}
-	else if (!strcmp(current_argument, "-maxdepth")) {
+	else if (0 == strcmp(current_argument, "-maxdepth")) {
 		increment_current_argument(INT_EXPECTED);
 		args_bundle->max_depth = atol(current_argument);
 	}
@@ -570,13 +570,13 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 	while (next_arg_index < argument_count) {
 		increment_current_argument(NULL);
 
-		if (!strcmp(current_argument, "(")) {
+		if (0 == strcmp(current_argument, "(")) {
 			/* start a new eval. tree in the ( ) */
 			condition = build_condition_tree(args_bundle);
 			break;
 		}
-		else if (!strcmp(current_argument, "!") ||
-		    !strcmp(current_argument, "not")) {
+		else if (0 == strcmp(current_argument, "!") ||
+		    0 == strcmp(current_argument, "not")) {
 			condition = make_empty_condition(check_not);
 			condition->data1 = create_condition_data(
 			    build_condition_node(args_bundle));
@@ -592,7 +592,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 		else if (try_parse_option(args_bundle)) {
 			/* do nothing */
 		}
-		else if (!strcmp(current_argument, ")")) {
+		else if (0 == strcmp(current_argument, ")")) {
 			errx(1, ARG1_ERR_MSG, next_arg_index - 1,
 			    PARENTH_UNEXPECTED);
 			break;
@@ -621,10 +621,10 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 	while (next_arg_index < argument_count) {
 		increment_current_argument(NULL);
 
-		if (!strcmp(current_argument, ")")) {
+		if (0 == strcmp(current_argument, ")")) {
 			break;
 		}
-		else if (!strcmp(current_argument, "or")) {
+		else if (0 == strcmp(current_argument, "or")) {
 			condition_temp = build_condition_node(args_bundle);
 			if (!condition_temp) {
 				errx(1, ARG1_ERR_MSG, next_arg_index,

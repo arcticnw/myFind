@@ -8,16 +8,16 @@
 #include "common.h"
 
 
-void 
+void
 string_to_lower(char *data) {
-    int i;
-    for(i = 0; data[i] != '\0'; i++) {
-        data[i] = tolower(data[i]);
-    }
+	int i;
+	for (i = 0; data[i] != '\0'; i++) {
+		data[i] = tolower(data[i]);
+	}
 }
 
 
-char * 
+char *
 copy_string(const char *source) {
 	char * target;
 
@@ -25,7 +25,7 @@ copy_string(const char *source) {
 		return (NULL);
 	}
 
-	target = malloc(sizeof(char) * (strlen(source) + 1));
+	target = malloc(sizeof (char) * (strlen(source) + 1));
 
 	if (!target) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));

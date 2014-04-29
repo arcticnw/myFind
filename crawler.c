@@ -17,7 +17,7 @@ node_list_t *
 initialize_node_list() {
 	node_list_t *nodes = NULL;
 
-	nodes = malloc(sizeof(node_list_t));
+	nodes = malloc(sizeof (node_list_t));
 	if (!nodes) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
@@ -55,7 +55,9 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	node_t *current_node;
 
 	/* check whether node_id is already present in the list */
-	for (current_node = list->first; current_node; current_node = current_node->next) {
+	for (current_node = list->first;
+	    current_node;
+	    current_node = current_node->next) {
 		if (current_node->node_id == node_id) {
 			*nodeRef = current_node;
 			return (0);
@@ -63,7 +65,7 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	}
 
 	/* allocate a new node */
-	new_node = malloc(sizeof(node_t));
+	new_node = malloc(sizeof (node_t));
 	if (!new_node) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
@@ -75,7 +77,7 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	new_node->local_name = copy_string(local_name);
 
 	/* insert node to the list */
-	if (list->count == 0) {
+	if (0 == list->count) {
 		list->first = new_node;
 	}
 	else {
@@ -92,7 +94,7 @@ void
 do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file) {
 	action_t *action;
 
-	for(action = args_bundle->action; action; action = action->next) {
+	for (action = args_bundle->action; action; action = action->next) {
 		action->do_action(action, file);
 	}
 }
@@ -115,33 +117,35 @@ crawl(const args_bundle_t *args_bundle) {
 void
 crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
     node_list_t *list) {
-	DIR * dir;                      /* current directory */
-	DIR * subdir;                   /* subdirectory */
-	struct dirent * file_entry;     /* current file name */
-	struct stat file_entry_stat;    /* current file status  */
-	char *local_path = NULL;        /* relative path to current file */
-	int local_path_length;          /* (string) length of relative path */
-	char *real_path = NULL;         /* absolute path to current file */
-	char isLink;                    /* current file is symlink */
-	file_info_bundle_t file_info;   /* current file information pack */
-	int result;                     /* result of matching with conditions */
-	node_t *node;                   /* node returned by try_add_node */
-	char validDepth;                /* current depth is within specified bounds */
+	DIR * dir; /* current directory */
+	DIR * subdir; /* subdirectory */
+	struct dirent * file_entry; /* current file name */
+	struct stat file_entry_stat; /* current file status  */
+	char *local_path = NULL; /* relative path to current file */
+	int local_path_length; /* (string) length of relative path */
+	char *real_path = NULL; /* absolute path to current file */
+	char isLink; /* current file is symlink */
+	file_info_bundle_t file_info; /* current file information pack */
+	int result; /* result of matching with conditions */
+	node_t *node; /* node returned by try_add_node */
+	char validDepth; /* current depth is within specified bounds */
 
-	validDepth = 
-	    args_bundle->min_depth < depth && 
-		(args_bundle->max_depth == -1 || depth < args_bundle->max_depth);
+	validDepth =
+	    args_bundle->min_depth < depth &&
+	    (args_bundle->max_depth == -1 || depth < args_bundle->max_depth);
 
 	/* make sure we aren't in path loop */
 	/* check only if link-following is allowed */
 	if (args_bundle->follow_links) {
 		if (stat(path, &file_entry_stat)) {
-			fprintf(stderr, DIR_ACCESS_WRN_MSG, path, strerror(errno));
+			fprintf(stderr, DIR_ACCESS_WRN_MSG,
+			    path, strerror(errno));
 			return;
 		}
 		if (args_bundle->follow_links && !try_add_node(list, path,
 		    file_entry_stat.st_ino, &node)) {
-			fprintf(stderr, DIR_LOOP_WRN_MSG, path, node->local_name);
+			fprintf(stderr, DIR_LOOP_WRN_MSG,
+			    path, node->local_name);
 			return;
 		}
 	}
@@ -153,21 +157,23 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 	}
 
 	/* traverse directory */
-	while ((file_entry = readdir(dir))) { 
+	while ((file_entry = readdir(dir))) {
 		/* skip self and parent directory */
-		if (!strcmp(file_entry->d_name, ".") ||
-		    !strcmp(file_entry->d_name, "..")) {
+		if (0 == strcmp(file_entry->d_name, ".") ||
+		    0 == strcmp(file_entry->d_name, "..")) {
 			continue;
 		}
 
 		/* skip hidden */
-		if (args_bundle->ignore_hidden && file_entry->d_name[0] == '.') {
+		if (args_bundle->ignore_hidden &&
+		    file_entry->d_name[0] == '.') {
 			continue;
 		}
 
 		/* get relative path */
-		local_path_length = strlen(path) + strlen(file_entry->d_name) + 2;
-		local_path = malloc(sizeof(char) * local_path_length);
+		local_path_length = strlen(path) +
+		    strlen(file_entry->d_name) + 2;
+		local_path = malloc(sizeof (char) * local_path_length);
 		if (!local_path) {
 			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
@@ -180,21 +186,23 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 		/* get file status */
 		if (args_bundle->follow_links &&
 		    stat(local_path, &file_entry_stat)) {
-			fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
+			fprintf(stderr, FILE_ACCESS_WRN_MSG,
+			    local_path, strerror(errno));
 			isLink = 0;
 			goto cleanupAndContinue;
 		}
 
 		if (!args_bundle->follow_links &&
 		    lstat(local_path, &file_entry_stat)) {
-			fprintf(stderr, FILE_ACCESS_WRN_MSG, local_path, strerror(errno));
+			fprintf(stderr, FILE_ACCESS_WRN_MSG,
+			    local_path, strerror(errno));
 			isLink = 0;
 			goto cleanupAndContinue;
 		}
 
 		isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
 
-		/* start file testing only if the minimum depth has been reached */
+		/* start file testing only if the min depth has been reached */
 		if (validDepth) {
 
 			/* prepare file infomation pack */
@@ -221,7 +229,7 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 
 		}
 
-		/* if file isn't symlink and link-following is disabled, attempt to 
+		/* if file isn't symlink and link-following is off, attempt to
 			 open file as directory and traverse it */
 
 		if ((args_bundle->follow_links || !isLink) &&
