@@ -7,7 +7,8 @@
 
 #define	FILE_ACCESS_WRN_MSG "Unable to access file %s: %s\n"
 #define	DIR_ACCESS_WRN_MSG "Unable to access directory %s: %s\n"
-#define	DIR_LOOP_WRN_MSG "File system loop detected: %s was already visited in %s\n"
+#define	DIR_LOOP_WRN_MSG_PRFX "File system loop detected: "
+#define	DIR_LOOP_WRN_MSG DIR_LOOP_WRN_MSG_PRFX "%s was already visited in %s\n"
 
 /* this structure holds information about visited node ids and their relative */
 /* paths and a pointer to next one */
@@ -41,10 +42,10 @@ dispose_node_list(node_list_t *list);
 
 /* this function searches the linked list for a node with given node_id; */
 /* if a node is found, 0 is returned and a pointer to this node is stored */
-/*     in conflictingNode parameter; */
+/* in conflictingNode parameter; */
 /* if there is no node with such node_id, 1 is returned, new node is */
-/*     created with this node_id and conflictingNode is pointed to this */
-/*     new node */
+/* created with this node_id and conflictingNode is pointed to this */
+/* new node */
 int
 try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
     node_t ** conflictingNode);
@@ -64,6 +65,7 @@ crawl(const args_bundle_t *args_bundle);
 /* this function starts a recursive search at given path, with given list of */
 /* passed node_ids and given arguments */
 void
-crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth, node_list_t *list);
+crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
+    node_list_t *list);
 
 #endif

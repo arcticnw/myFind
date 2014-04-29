@@ -12,8 +12,8 @@ void
 do_print(action_t *action, file_info_bundle_t file);
 
 
-/* this function executes a program with given arguments and filename with its*/
-/* relative path */
+/* this function executes a program with given arguments and filename with */
+/* its relative path */
 void
 do_execute(action_t *action, file_info_bundle_t file);
 

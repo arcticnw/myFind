@@ -105,7 +105,7 @@ create_action();
 
 /* this function appends an action at the end of a linked list of actions */
 /* if no such list exists in args_bundle_t, then the action is used as */
-/**    a head of the list */
+/* a head of the list */
 void
 append_action(args_bundle_t *args_bundle, action_t *action);
 

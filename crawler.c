@@ -227,8 +227,8 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 
 		}
 
-		/* if file isn't symlink and link-following is off, attempt to
-			 open file as directory and traverse it */
+		/* if file isn't symlink and link-following is off, */
+		/* attempt to open file as directory and traverse it */
 
 		if ((args_bundle->follow_links || !isLink) &&
 		    (args_bundle->max_depth == -1 ||

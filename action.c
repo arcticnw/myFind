@@ -24,7 +24,7 @@ do_execute(action_t *action, file_info_bundle_t file) {
 
 	child_pid = fork();
 
-	switch(child_pid) {
+	switch (child_pid) {
 		case -1:
 			errx(127, FORK_ERR_MSG, strerror(errno));
 			break;
