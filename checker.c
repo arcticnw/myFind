@@ -231,13 +231,13 @@ int check_size(condition_t *condition, file_info_bundle_t file)
 	switch (condition->params.compare_method)
 	{
 		case '-': 
-			return file_size < target; 
+			return (file_size < target); 
 			break;
 		case '+':
-			return file_size > target; 
+			return (file_size > target); 
 			break;
 		default:
-			return file_size = target; 
+			return (file_size == target); 
 			break;
 	}
 	
@@ -259,13 +259,13 @@ int compare_time(time_t now, time_t file_time, long accurancy, long target, char
 	switch (compare_method)
 	{
 		case '-': 
-			return difference < target; 
+			return (difference < target); 
 			break;
 		case '+':
-			return difference > target; 
+			return (difference > target); 
 			break;
 		default:
-			return difference = target; 
+			return (difference == target); 
 			break;
 	}
 }

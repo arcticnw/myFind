@@ -240,8 +240,8 @@ void crawl_recursive(const char *path, const args_bundle_t *args_bundle, int dep
 			 open file as directory and traverse it */
 		
 		if ((args_bundle->follow_links || !isLink) &&
-			(args_bundle->max_depth == -1 || depth + 1 < args_bundle->max_depth)
-			(subdir = opendir(local_path)))
+		    (args_bundle->max_depth == -1 || depth + 1 < args_bundle->max_depth) &&
+		    (subdir = opendir(local_path)))
 		{
 			closedir(subdir);
 			crawl_recursive(local_path, args_bundle, depth+1, list);

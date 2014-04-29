@@ -3,8 +3,12 @@
 
 #include "common.h"
 
-#define	ARG_ERR_MSG "Argument parsing error at current_position %d: "
+#define	ARG_ERR_MSG "Argument parsing error at position %d: "
+
 #define	ARG1_ERR_MSG ARG_ERR_MSG "%s"
+#define	ARG1_GROUP_ERR_MSG ARG_ERR_MSG "Unable to access group information: %s"
+#define	ARG1_USER_ERR_MSG ARG_ERR_MSG "Unable to access user information: %s"
+
 #define	ARG2_ERR_MSG ARG_ERR_MSG "%s: %s"
 #define	ARG2_FILE_ERR_MSG ARG_ERR_MSG "Unable to access file %s: %s"
 
@@ -14,6 +18,7 @@
 #define SEMICOL_EXPECTED "';' expected at the end of 'exec' argument list"
 #define UNKNOWN_TOKEN "Unknown token"
 #define PARENTH_UNEXPECTED "')' unexpected at this point"
+#define	ENTRY_NONEXISTENT "Entry doesn't exist"
 
 /* this function sets defaults, checks and parses string arguments and        */
 /*     returns them in the args_bundle_t structure                            */
@@ -102,7 +107,7 @@ create_action();
 /*     if no such list exists in args_bundle_t, then the action is used as    */
 /**    a head of the list                                                     */
 void 
-append_action(action_t *action);
+append_action(args_bundle_t *args_bundle, action_t *action);
 
 
 /**/

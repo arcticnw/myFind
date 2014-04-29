@@ -35,14 +35,6 @@ void usage(const char *name)
 	printf("%s\n    %s\n", "-maxdepth n",
 	    "won't ignore hidden files");
 	
-	
-	printf("\n\n");
-	
-	/* about numeric arguments */
-	printf("Numeric arguments can be specified as:\n"
-	    "+n   for expressing 'greather than' n\n"
-	    " n   for expressing 'equal to' n\n"
-	    "-n   for expressing 'less than' n\n");
 
 	/* expressions */
 	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
@@ -90,15 +82,27 @@ void usage(const char *name)
 
 	printf("%s\n    %s\n", "gid n", 
 		"will match file group id with provided number");
+	printf("%s\n    %s\n", "group name", 
+		"will match file group with provided name");
 	printf("%s\n    %s\n", "uid n", 
 		"will match file user id with provided number");
+	printf("%s\n    %s\n", "user name", 
+		"will match file user with provided name");
 	printf("\n");
 
+	
+	/* about numeric arguments */
+	printf("\nNumeric arguments can be specified as:\n"
+	    "+n   for expressing 'greather than' n\n"
+	    " n   for expressing 'equal to' n\n"
+	    "-n   for expressing 'less than' n\n\n\n");
+	
 	/* boolean operations */
 	printf("%s\n    %s\n", "true", 
 	    "always passes");
 	printf("%s\n    %s\n", "false", 
 	    "never passes");
+	printf("\n");
 	printf("%s\n    %s\n    %s\n", "[expression] and [expression]", 
 	    "both preceding and following operands have to be true",
 	    "'and' operator has tighter associativity than 'or' operator");
@@ -130,7 +134,7 @@ void usage(const char *name)
 int main(int argc, char **argv)
 {
     args_bundle_t *args_bundle;
-    
+
     printf("** hello\n");
     
     if (argc < 2)
