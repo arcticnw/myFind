@@ -82,6 +82,18 @@ void usage(const char *name)
 		"will match files modified more recently than file");
 	printf("\n");
 		
+	printf("%s\n    %s\n", "empty", 
+		"will match empty regular files and empty directories");
+	printf("%s\n    %s\n", "size n", 
+		"will compare the file size with provided number");
+	printf("\n");
+
+	printf("%s\n    %s\n", "gid n", 
+		"will match file group id with provided number");
+	printf("%s\n    %s\n", "uid n", 
+		"will match file user id with provided number");
+	printf("\n");
+
 	/* boolean operations */
 	printf("%s\n    %s\n", "true", 
 	    "always passes");

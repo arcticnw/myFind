@@ -164,6 +164,86 @@ int check_ctime(condition_t *condition, file_info_bundle_t file)
 	    condition->params.compare_method) );
 }
 
+int check_empty(condition_t *condition, file_info_bundle_t file)
+{
+	DIR * dir;
+	int n;
+
+	/* is empty regular file */
+	if (S_ISREG(file.file_entry_stat.st_mode) && !file.file_entry_stat.st_size)
+	{
+		return (1);
+	}
+	
+	/* is empty directory */
+	if (S_ISDIR(file.file_entry_stat.st_mode))
+	{
+		n = 0;
+		dir = opendir(file.file_entry->d_name);
+		if (dir)
+		{
+			while (readdir(dir)) 
+			{
+				n++;
+				if (n > 2)
+				{
+					break;
+				}
+			}
+			closedir(dir);
+		}
+		if (n == 2)
+		{
+			return (1);
+		}
+	}
+	
+	return (0);
+}
+
+int check_gid(condition_t *condition, file_info_bundle_t file)
+{
+	assert(condition);
+	assert(condition->data1_content == LONG);
+	
+	return (file.file_entry_stat.st_gid == condition->data1.long_data);
+}
+
+int check_uid(condition_t *condition, file_info_bundle_t file)
+{
+	assert(condition);
+	assert(condition->data1_content == LONG);
+	
+	return (file.file_entry_stat.st_uid == condition->data1.long_data);
+}
+
+int check_size(condition_t *condition, file_info_bundle_t file)
+{
+	long file_size;
+	long target;
+
+	assert(condition);
+	assert(condition->data1_content == LONG);
+	
+	file_size = file.file_entry_stat.st_size;
+	target = condition->data1.long_data;
+	
+	switch (condition->params.compare_method)
+	{
+		case '-': 
+			return file_size < target; 
+			break;
+		case '+':
+			return file_size > target; 
+			break;
+		default:
+			return file_size = target; 
+			break;
+	}
+	
+	return (file.file_entry_stat.st_gid == condition->data1.long_data);
+}
+
 int compare_time(time_t now, time_t file_time, long accurancy, long target, char compare_method)
 {
 	long difference;

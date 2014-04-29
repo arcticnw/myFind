@@ -28,6 +28,16 @@ int
 check_and(condition_t *condition, file_info_bundle_t file);
 
 
+/* this function applies OR operator on the results of the two conditions     */
+int 
+check_or(condition_t *condition, file_info_bundle_t file);
+
+
+/* this function tries to match file name with provided pattern               */
+int 
+check_name(condition_t *condition, file_info_bundle_t file);
+
+
 /* this function determines if the file was accessed specified time ago       */
 int check_atime(condition_t *condition, file_info_bundle_t file);
 
@@ -40,14 +50,24 @@ int check_mtime(condition_t *condition, file_info_bundle_t file);
 int check_ctime(condition_t *condition, file_info_bundle_t file);
 
 
-/* this function applies OR operator on the results of the two conditions     */
+/* this function tests if regular file or directory is empty                  */
 int 
-check_or(condition_t *condition, file_info_bundle_t file);
+check_empty(condition_t *condition, file_info_bundle_t file);
 
 
-/* this function tries to match file name with provided pattern               */
+/* this function checks the file's group id                                   */
 int 
-check_name(condition_t *condition, file_info_bundle_t file);
+check_gid(condition_t *condition, file_info_bundle_t file);
+
+
+/* this function checks the file's user id                                    */
+int 
+check_uid(condition_t *condition, file_info_bundle_t file);
+
+
+/* this function checks is the file size is of the specified size             */
+int 
+check_size(condition_t *condition, file_info_bundle_t file);
 
 
 /* this function computes the difference of the time since file_time until now*/

@@ -72,7 +72,7 @@ merge_condition_nodes(condition_t *condition1, condition_t *condition2,
 
 /* this function initializes new empty condition                              */
 condition_t *
-make_empty_condition();
+make_empty_condition(check_t checker);
 
 
 /* this function initializes new condition using provided check-function and  */

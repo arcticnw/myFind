@@ -203,8 +203,7 @@ create_int_data(char *original_data, char *comparison)
 condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2, check_t checker)
 {
-	condition_t *condition = make_empty_condition();
-	condition->do_check = checker;
+	condition_t *condition = make_empty_condition(checker);
 	condition->data1 = create_condition_data(condition1);
 	condition->data1_content = CONDITION;
 	condition->data2 = create_condition_data(condition2);
@@ -215,7 +214,7 @@ merge_condition_nodes(condition_t *condition1, condition_t *condition2, check_t 
 
 
 condition_t *
-make_empty_condition()
+make_empty_condition(check_t checker)
 {
 	condition_t *condition = malloc(sizeof(condition_t));
 	if (!condition)
@@ -223,7 +222,7 @@ make_empty_condition()
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 	
-	condition->do_check = check_true;
+	condition->do_check = checker;
 	condition->data1.long_data = 0;
 	condition->data1_content = NONE;
 	condition->data2.long_data = 0;
@@ -238,8 +237,7 @@ make_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	condition = make_empty_condition();
-	condition->do_check = checker;
+	condition = make_empty_condition(checker);
 	
 	increment_current_argument(STR_EXPECTED);
 	condition->data1 = create_string_data(current_argument);
@@ -254,8 +252,7 @@ make_string_string_condition(check_t checker)
 {
 	condition_t *condition;
 
-	condition = make_empty_condition();
-	condition->do_check = checker;
+	condition = make_empty_condition(checker);
 	
 	increment_current_argument(STR_EXPECTED);
 	condition->data1 = create_string_data(current_argument);
@@ -274,8 +271,7 @@ make_int_condition(check_t checker)
 {
 	condition_t *condition;
 
-	condition = make_empty_condition();
-	condition->do_check = checker;
+	condition = make_empty_condition(checker);
 	
 	increment_current_argument(INT_EXPECTED);
 	condition->data1 = create_int_data(current_argument, &(condition->params.compare_method));
@@ -356,13 +352,11 @@ try_parse_condition(args_bundle_t *args_bundle)
 	
 	if (!strcmp(current_argument, "true"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_true;
+		condition = make_empty_condition(check_true);
 	}
 	else if (!strcmp(current_argument, "false"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_false;
+		condition = make_empty_condition(check_false);
 	}
 	else if (!strcmp(current_argument, "name"))
 	{
@@ -374,6 +368,22 @@ try_parse_condition(args_bundle_t *args_bundle)
 		condition = make_string_condition(check_name);
 		string_to_lower(condition->data1.string_data);
 		condition->params.is_case_sensitive = 0;
+	}
+	else if (!strcmp(current_argument, "empty"))
+	{
+		condition = make_empty_condition(check_empty);
+	}
+	else if (!strcmp(current_argument, "gid"))
+	{
+		condition = make_int_condition(check_gid);
+	}
+	else if (!strcmp(current_argument, "uid"))
+	{
+		condition = make_int_condition(check_uid);
+	}
+	else if (!strcmp(current_argument, "size"))
+	{
+		condition = make_int_condition(check_size);
 	}
 	else if (!strcmp(current_argument, "amin"))
 	{
@@ -389,8 +399,7 @@ try_parse_condition(args_bundle_t *args_bundle)
 	}
 	else if (!strcmp(current_argument, "anewer"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_atime;
+		condition = make_empty_condition(check_atime);
 		condition->params.compare_method = '-';
 		
 		increment_current_argument(STR_EXPECTED);
@@ -418,8 +427,7 @@ try_parse_condition(args_bundle_t *args_bundle)
 	}
 	else if (!strcmp(current_argument, "cnewer"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_ctime;
+		condition = make_empty_condition(check_ctime);
 		condition->params.compare_method = '-';
 		
 		increment_current_argument(STR_EXPECTED);
@@ -447,8 +455,7 @@ try_parse_condition(args_bundle_t *args_bundle)
 	}
 	else if (!strcmp(current_argument, "mnewer"))
 	{
-		condition = make_empty_condition();
-		condition->do_check = check_mtime;
+		condition = make_empty_condition(check_mtime);
 		condition->params.compare_method = '-';
 		
 		increment_current_argument(STR_EXPECTED);
@@ -593,8 +600,7 @@ condition_t *build_condition_node(args_bundle_t *args_bundle)
 		}
 		else if (!strcmp(current_argument, "!") || !strcmp(current_argument, "not"))
 		{
-			condition = make_empty_condition();
-			condition->do_check = check_not;
+			condition = make_empty_condition(check_not);
 			condition->data1 = create_condition_data(build_condition_node(args_bundle));
 			condition->data1_content = CONDITION;
 			break;
