@@ -110,7 +110,7 @@ This program is implemented using evaluation tree. At the start of the program t
 
 Once arguments are parsed the program goes through the directory and passes all the filenames to the root of the evaluation tree. If the function returns true all functions in the linked list are called with the relative path of the matched file as parameter. If the file is a directory then the program recursively searches this directory.
 
-`main.c` main program, launched parameter parser and file crawler
+`main.c` main program, launches parameter parser and file crawler
 
 `parser.c` parses the arguments and builds the evaluation tree
 
