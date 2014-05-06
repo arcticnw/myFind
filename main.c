@@ -5,7 +5,6 @@
 #include "action.h"
 #include "parser.h"
 #include "crawler.h"
-#include "debug.h"
 
 void
 usage(const char *name) {
@@ -135,26 +134,16 @@ int
 main(int argc, char **argv) {
 	args_bundle_t *args_bundle;
 
-	printf("** hello\n");
-
 	if (argc < 2) {
 		usage(argv[0]);
 		return (0);
 	}
 
-	printf("** parse\n");
-
 	args_bundle = parse_arguments(argc, argv);
 
-	dumpArgsBundle(args_bundle);
-
-	printf("** crawl\n");
 	crawl(args_bundle);
 
-	printf("** dispose\n");
 	dispose_args_bundle(args_bundle);
-
-	printf("** bye\n");
 
 	return (0);
 }
