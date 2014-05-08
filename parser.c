@@ -132,29 +132,22 @@ dispose_action(action_t *action) {
 }
 
 
-data_t
-create_condition_data(condition_t *condition) {
-	data_t data;
-	data.condition_data = condition;
-
-	return (data);
+void
+create_condition_data(condition_t *condition, data_t *result) {
+	data->condition_data = condition;
 }
 
 
-data_t
-create_string_data(const char *original_data) {
-	data_t data;
-	data.string_data = copy_string(original_data);
-
-	return (data);
+void
+create_string_data(const char *original_data, data_t *result) {
+	data->string_data = copy_string(original_data);
 }
 
 
-data_t
-create_int_data(char *original_data, char *comparison) {
+void
+create_int_data(char *original_data, char *comparison, data_t *result) {
 	char *parse_data = original_data;
 	long value;
-	data_t data;
 
 	assert(original_data);
 	assert(strlen(original_data));
@@ -170,9 +163,7 @@ create_int_data(char *original_data, char *comparison) {
 	}
 
 	value = atol(parse_data);
-	data.long_data = value;
-
-	return (data);
+	data->long_data = value;
 }
 
 
@@ -180,9 +171,9 @@ condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2,
     check_t checker) {
 	condition_t *condition = make_empty_condition(checker);
-	condition->data1 = create_condition_data(condition1);
+	create_condition_data(condition1, &condition->data1);
 	condition->data1_content = CONDITION;
-	condition->data2 = create_condition_data(condition2);
+	create_condition_data(condition2, &condition->data2);
 	condition->data2_content = CONDITION;
 
 	return (condition);
@@ -213,7 +204,7 @@ make_string_condition(check_t checker) {
 	condition = make_empty_condition(checker);
 
 	increment_current_argument(STR_EXPECTED);
-	condition->data1 = create_string_data(current_argument);
+	create_string_data(current_argument, &condition->data1);
 	condition->data1_content = STRING;
 
 	return (condition);
@@ -227,11 +218,11 @@ make_string_string_condition(check_t checker) {
 	condition = make_empty_condition(checker);
 
 	increment_current_argument(STR_EXPECTED);
-	condition->data1 = create_string_data(current_argument);
+	create_string_data(current_argument, &condition->data1);
 	condition->data1_content = STRING;
 
 	increment_current_argument(STR_EXPECTED);
-	condition->data2 = create_string_data(current_argument);
+	create_string_data(current_argument, &condition->data2);
 	condition->data2_content = STRING;
 
 	return (condition);
@@ -245,8 +236,8 @@ make_int_condition(check_t checker) {
 	condition = make_empty_condition(checker);
 
 	increment_current_argument(INT_EXPECTED);
-	condition->data1 = create_int_data(current_argument,
-	    &(condition->params.compare_method));
+	create_int_data(current_argument, &(condition->params.compare_method),
+	    &condition->data1);
 	condition->data1_content = LONG;
 
 	return (condition);
@@ -290,22 +281,19 @@ append_action(args_bundle_t *args_bundle, action_t *action) {
 }
 
 
-struct stat
-retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle) {
-	struct stat file_entry_stat;
-
+void
+retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle,
+    struct stat *result) {
 	if (args_bundle->follow_links &&
-		stat(file_name, &file_entry_stat)) {
+		stat(file_name, result)) {
 		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name,
 		    strerror(errno));
 	}
 	if (!args_bundle->follow_links &&
-		lstat(file_name, &file_entry_stat)) {
+		lstat(file_name, result)) {
 		errx(2, ARG2_FILE_ERR_MSG, next_arg_index-1, file_name,
 		    strerror(errno));
 	}
-
-	return (file_entry_stat);
 }
 
 
@@ -384,7 +372,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 
 		file_name = copy_string(current_argument);
 
-		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
+		retrieve_file_stat(file_name, args_bundle, &file_entry_stat);
 
 		condition->data1.long_data =
 		    args_bundle->time_now - file_entry_stat.st_atime;
@@ -407,7 +395,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 
 		file_name = copy_string(current_argument);
 
-		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
+		retrieve_file_stat(file_name, args_bundle, &file_entry_stat);
 
 		condition->data1.long_data =
 		    args_bundle->time_now - file_entry_stat.st_atime;
@@ -430,7 +418,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 
 		file_name = copy_string(current_argument);
 
-		file_entry_stat = retrieve_file_stat(file_name, args_bundle);
+		retrieve_file_stat(file_name, args_bundle, &file_entry_stat);
 
 		condition->data1.long_data =
 		    args_bundle->time_now - file_entry_stat.st_atime;
@@ -546,8 +534,9 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 		} else if (0 == strcmp(current_argument, "!") ||
 		    0 == strcmp(current_argument, "not")) {
 			condition = make_empty_condition(check_not);
-			condition->data1 = create_condition_data(
-			    build_condition_node(args_bundle));
+			create_condition_data(
+			    build_condition_node(args_bundle),
+			    &condition->data1);
 			condition->data1_content = CONDITION;
 			break;
 		} else if ((condition = try_parse_condition(args_bundle))) {

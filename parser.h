@@ -53,19 +53,19 @@ dispose_action(action_t *action);
 
 
 /* this function initializes a data-holding struct from provided condition */
-data_t
-create_condition_data(condition_t *condition);
+void
+create_condition_data(condition_t *condition, data_t *result);
 
 
 /* this function initializes a data-holding struct from provided literal */
-data_t
-create_string_data(const char *original_data);
+void
+create_string_data(const char *original_data, data_t *result);
 
 
 /* this function initializes a data-holding struct from provided integer and */
 /* determines the method of comparison (+ / -) */
-data_t
-create_int_data(char *original_data, char *comparison);
+void
+create_int_data(char *original_data, char *comparison, data_t *result);
 
 
 /* this function initializes a new condition using the two provided */
@@ -111,7 +111,7 @@ append_action(args_bundle_t *args_bundle, action_t *action);
 
 
 /* this function retrieves file status */
-struct stat
+void
 retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle);
 
 

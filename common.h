@@ -107,7 +107,7 @@ void
 string_to_lower(char *data);
 
 
-/* this function copies string from soruce to target, including allocation */
+/* this function copies string from soruce, including allocation */
 /* including allocation and error handling */
 char *
 copy_string(const char *source);
