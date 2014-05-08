@@ -30,9 +30,11 @@ usage(const char *name) {
 
 	/* min depth, max depth */
 	printf("%s\n    %s\n", "-mindepth n",
-	    "will ignore hidden files");
+	    "minimal level in the directory tree before the search will "
+	    "be performed");
 	printf("%s\n    %s\n", "-maxdepth n",
-	    "won't ignore hidden files");
+	    "maximal level in the directory tree before the search will no"
+	    "longer search");
 
 
 	/* expressions */

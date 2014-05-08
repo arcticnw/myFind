@@ -112,7 +112,8 @@ append_action(args_bundle_t *args_bundle, action_t *action);
 
 /* this function retrieves file status */
 void
-retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle);
+retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle,
+    struct stat *result);
 
 
 /* this function tries to make and return a condition from provided literal, */

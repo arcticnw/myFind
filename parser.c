@@ -134,13 +134,13 @@ dispose_action(action_t *action) {
 
 void
 create_condition_data(condition_t *condition, data_t *result) {
-	data->condition_data = condition;
+	result->condition_data = condition;
 }
 
 
 void
 create_string_data(const char *original_data, data_t *result) {
-	data->string_data = copy_string(original_data);
+	result->string_data = copy_string(original_data);
 }
 
 
@@ -163,7 +163,7 @@ create_int_data(char *original_data, char *comparison, data_t *result) {
 	}
 
 	value = atol(parse_data);
-	data->long_data = value;
+	result->long_data = value;
 }
 
 
