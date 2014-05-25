@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "crawler.h"
+#include "crawler_impl.h"
 
 #define	FILE_ACCESS_WRN_MSG "Unable to access file %s: %s\n"
 #define	DIR_ACCESS_WRN_MSG "Unable to access directory %s: %s\n"
@@ -19,7 +20,7 @@
 #define	DIR_LOOP_WRN_MSG DIR_LOOP_WRN_MSG_PRFX "%s was already visited in %s\n"
 #define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
 
-node_list_t *
+static node_list_t *
 initialize_node_list() {
 	node_list_t *nodes = NULL;
 
@@ -35,7 +36,7 @@ initialize_node_list() {
 	return (nodes);
 }
 
-void
+static void
 dispose_node_list(node_list_t *list) {
 	node_t *current_node;
 	node_t *current_node_next;
@@ -54,7 +55,7 @@ dispose_node_list(node_list_t *list) {
 	free(list);
 }
 
-int
+static int
 try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
     node_t ** nodeRef) {
 	node_t *new_node;
@@ -95,7 +96,7 @@ try_add_node(node_list_t *list, const char *local_name, const ino_t node_id,
 	return (1);
 }
 
-void
+static void
 do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file) {
 	action_t *action;
 
@@ -121,7 +122,7 @@ crawl(const args_bundle_t *args_bundle) {
 	dispose_node_list(nodes);
 }
 
-void
+static void
 check_file(struct dirent *file_entry, char *local_path,
     const args_bundle_t *args_bundle, int depth, char *recurse) {
 
@@ -215,7 +216,7 @@ check_file(struct dirent *file_entry, char *local_path,
 	}
 }
 
-void
+static void
 crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
     node_list_t *list) {
 	DIR * dir; /* current directory */

@@ -13,6 +13,7 @@
 
 #include "common.h"
 #include "parser.h"
+#include "parser_impl.h"
 #include "checker.h"
 #include "action.h"
 
@@ -34,6 +35,8 @@
 #define	PARENTH_UNEXPECTED "')' unexpected at this point"
 #define	ENTRY_NONEXISTENT "Entry doesn't exist"
 #define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
+
+
 
 int argument_count;
 char **argument_data;
@@ -71,7 +74,7 @@ parse_arguments(int argc, char **argv) {
 }
 
 
-args_bundle_t *
+static args_bundle_t *
 initialize_args_bundle() {
 	args_bundle_t *args_bundle;
 	args_bundle = malloc(sizeof (args_bundle_t));
@@ -92,7 +95,7 @@ initialize_args_bundle() {
 }
 
 
-action_t *
+static action_t *
 create_default_action() {
 	action_t *action;
 	action = create_action();
@@ -114,7 +117,7 @@ dispose_args_bundle(args_bundle_t *args_bundle) {
 }
 
 
-void
+static void
 dispose_condition(condition_t *condition) {
 	assert(condition);
 
@@ -138,7 +141,7 @@ dispose_condition(condition_t *condition) {
 }
 
 
-void
+static void
 dispose_action(action_t *action) {
 	int i;
 
@@ -158,7 +161,7 @@ dispose_action(action_t *action) {
 }
 
 
-long
+static long
 convert_string_to_long(const char* str){
 	long val;
 	char *endptr;
@@ -172,19 +175,19 @@ convert_string_to_long(const char* str){
 	return(val);
 }
 
-void
+static void
 create_condition_data(condition_t *condition, data_t *result) {
 	result->condition_data = condition;
 }
 
 
-void
+static void
 create_string_data(const char *original_data, data_t *result) {
 	result->string_data = copy_string(original_data);
 }
 
 
-void
+static void
 create_int_data(char *original_data, char *comparison, data_t *result) {
 	char *parse_data = original_data;
 	long value;
@@ -207,7 +210,7 @@ create_int_data(char *original_data, char *comparison, data_t *result) {
 }
 
 
-condition_t *
+static condition_t *
 merge_condition_nodes(condition_t *condition1, condition_t *condition2,
     check_t checker) {
 	condition_t *condition = make_empty_condition(checker);
@@ -220,7 +223,7 @@ merge_condition_nodes(condition_t *condition1, condition_t *condition2,
 }
 
 
-condition_t *
+static condition_t *
 make_empty_condition(check_t checker) {
 	condition_t *condition = malloc(sizeof (condition_t));
 	if (!condition) {
@@ -237,7 +240,7 @@ make_empty_condition(check_t checker) {
 }
 
 
-condition_t *
+static condition_t *
 make_string_condition(check_t checker) {
 	condition_t *condition;
 
@@ -251,7 +254,7 @@ make_string_condition(check_t checker) {
 }
 
 
-condition_t *
+static condition_t *
 make_string_string_condition(check_t checker) {
 	condition_t *condition;
 
@@ -269,7 +272,7 @@ make_string_string_condition(check_t checker) {
 }
 
 
-condition_t *
+static condition_t *
 make_int_condition(check_t checker) {
 	condition_t *condition;
 
@@ -284,7 +287,7 @@ make_int_condition(check_t checker) {
 }
 
 
-action_t *
+static action_t *
 create_action() {
 	action_t *action;
 	action = malloc(sizeof (action_t));
@@ -299,7 +302,7 @@ create_action() {
 }
 
 
-void
+static void
 append_action(args_bundle_t *args_bundle, action_t *action) {
 	action_t *current_action;
 	assert(args_bundle);
@@ -321,7 +324,7 @@ append_action(args_bundle_t *args_bundle, action_t *action) {
 }
 
 
-void
+static void
 retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle,
     struct stat *result) {
 	if (args_bundle->follow_links &&
@@ -337,7 +340,7 @@ retrieve_file_stat(const char *file_name, args_bundle_t *args_bundle,
 }
 
 
-condition_t *
+static condition_t *
 try_parse_condition(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 	struct stat file_entry_stat;
@@ -470,7 +473,7 @@ try_parse_condition(args_bundle_t *args_bundle) {
 }
 
 
-int
+static int
 try_parse_action(args_bundle_t *args_bundle) {
 	action_t *action;
 	int i;
@@ -537,7 +540,7 @@ try_parse_action(args_bundle_t *args_bundle) {
 }
 
 
-int
+static int
 try_parse_option(args_bundle_t *args_bundle) {
 	if (0 == strcmp(current_argument, "-follow")) {
 		args_bundle->follow_links = 1;
@@ -565,7 +568,8 @@ try_parse_option(args_bundle_t *args_bundle) {
 }
 
 
-condition_t *build_condition_node(args_bundle_t *args_bundle) {
+static condition_t *
+build_condition_node(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 
 	while (next_arg_index < argument_count) {
@@ -602,7 +606,8 @@ condition_t *build_condition_node(args_bundle_t *args_bundle) {
 }
 
 
-condition_t *build_condition_tree(args_bundle_t *args_bundle) {
+static condition_t *
+build_condition_tree(args_bundle_t *args_bundle) {
 	condition_t *condition = NULL;
 	condition_t *condition_buffer = NULL;
 	condition_t *condition_temp = NULL;
@@ -684,7 +689,7 @@ condition_t *build_condition_tree(args_bundle_t *args_bundle) {
 }
 
 
-void
+static void
 increment_current_argument(char * expected) {
 	if (next_arg_index >= argument_count) {
 		errx(1, ARG1_ERR_MSG, next_arg_index, expected);

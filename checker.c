@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "checker.h"
+#include "checker_impl.h"
 
 int
 check_true(condition_t *condition, file_info_bundle_t file) {
@@ -233,7 +234,7 @@ check_size(condition_t *condition, file_info_bundle_t file) {
 	return (file.file_entry_stat.st_gid == condition->data1.long_data);
 }
 
-int
+static int
 compare_time(time_t now, time_t file_time, long accurancy, long target,
     char compare_method) {
 	long difference;
