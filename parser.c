@@ -51,7 +51,6 @@ parse_arguments(int argc, char **argv) {
 	current_argument = NULL;
 
 	args_bundle = initialize_args_bundle();
-	//args_bundle->path = argument_data[1];
 	path_length = strlen(argument_data[1]);
 	if ('/' == argument_data[1][path_length-1]) {
 		args_bundle->path = copy_string_part(argument_data[1], 0, path_length-1);
@@ -165,7 +164,7 @@ convert_string_to_long(const char* str){
 	char *endptr;
 
 	errno = 0;
-	val = strtol(str, endptr, 10);
+	val = strtol(str, &endptr, 10);
 	if (errno != 0) {
 		errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1, INT_INVALID);
 	}

@@ -9,7 +9,7 @@
 
 /* this structure holds information about currently processed file */
 struct file_info_bundle_p {
-	struct dirent * file_entry;
+	char *file_name;
 	char *local_path;
 	struct stat file_entry_stat;
 	time_t time_now;
@@ -103,6 +103,12 @@ typedef struct args_bundle_p args_bundle_t;
 /* this function changes all characters in the literal to lower case */
 void
 string_to_lower(char *data);
+
+
+/* this function copies part of the string from soruce, including allocation */
+/* including allocation and error handling */
+char *
+copy_string_part(const char *source, int start, int length);
 
 
 /* this function copies string from soruce, including allocation */

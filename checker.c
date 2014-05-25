@@ -95,10 +95,10 @@ check_name(condition_t *condition, file_info_bundle_t file) {
 	/* data1 = pattern */
 
 	if (!condition->params.is_case_sensitive) {
-		file_name = copy_string(file.file_entry->d_name);
+		file_name = copy_string(file.file_name);
 		string_to_lower(file_name);
 	} else {
-		file_name = file.file_entry->d_name;
+		file_name = file.file_name;
 	}
 
 	return_value = !fnmatch(condition->data1.string_data, file_name,
@@ -173,7 +173,7 @@ check_empty(condition_t *condition, file_info_bundle_t file) {
 	/* is empty directory */
 	if (S_ISDIR(file.file_entry_stat.st_mode)) {
 		n = 0;
-		dir = opendir(file.file_entry->d_name);
+		dir = opendir(file.file_name);
 		if (dir) {
 			while (readdir(dir))  {
 				n++;

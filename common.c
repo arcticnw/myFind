@@ -20,6 +20,7 @@ string_to_lower(char *data) {
 char *
 copy_string_part(const char *source, int start, int length){
 	char *target;
+	size_t i;
 
 	if (!source)  {
 		return (NULL);
@@ -30,8 +31,6 @@ copy_string_part(const char *source, int start, int length){
 	if (!target) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
-
-	size_t i;
 
 	for (i = start; i < (start+length) && source[i] != '\0'; i++)
 		target[i] = source[i];

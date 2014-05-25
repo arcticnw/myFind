@@ -127,7 +127,7 @@ usage(const char *name) {
 	printf("operators: true, false, expr and expr, expr or expr, ( expr ), "
 	    "not [expr], ! [expr]\n");
 
-	printf("actions: print, exec executable [args | %s] ;\n"
+	printf("actions: print, exec executable [args | %s] ;\n",
 	    EXEC_REPLACE_TOKEN);
 
 	printf("\n\n");

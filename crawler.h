@@ -25,6 +25,11 @@ struct node_list_p {
 typedef struct node_list_p node_list_t;
 
 
+void
+check_file(struct dirent *file_entry, char *local_path,
+    const args_bundle_t *args_bundle, int depth, char *recurse);
+
+
 /* this function initializes and returnd a node list */
 node_list_t *
 initialize_node_list();

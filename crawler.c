@@ -107,19 +107,13 @@ do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file) {
 void
 crawl(const args_bundle_t *args_bundle) {
 	node_list_t *nodes = NULL;
-	char valid_depth;
 
 	assert(args_bundle->action);
 
 	/* initialize node list for path loop detection */
 	nodes = initialize_node_list();
 
-	validDepth =
-	    args_bundle->min_depth < 0 &&
-	    (args_bundle->max_depth == -1 || 0 < args_bundle->max_depth);
-
-	check_file(args_bundle->path, args_bundle->path, args_bundle,
-	    validDepth, NULL);
+	check_file(NULL, args_bundle->path, args_bundle, 0, NULL);
 
 	/* start the search */
 	crawl_recursive(args_bundle->path, args_bundle, 0, nodes);
@@ -128,31 +122,40 @@ crawl(const args_bundle_t *args_bundle) {
 }
 
 void
-check_file(const char *local_name, const char *local_path,
-    const args_bundle_t *args_bundle, char validDepth, char *recurse) {
+check_file(struct dirent *file_entry, char *local_path,
+    const args_bundle_t *args_bundle, int depth, char *recurse) {
 
 	DIR * subdir; /* subdirectory */
-	struct stat file_entry_stat; /* current file status */
-	char *local_path = NULL; /* relative path to current file */
-	int local_path_length; /* (string) length of relative path */
 	char isLink; /* current file is symlink */
+	struct stat file_entry_stat;
 	file_info_bundle_t file_info; /* current file information pack */
 	int result; /* result of matching with conditions */
-	
+	char *fileName;
+
 	if (recurse) {
 		(*recurse) = 0; 
 	}
-	
+
+	if (!file_entry) {
+		fileName = local_path;
+	} else {
+		fileName = file_entry->d_name;
+	}
+
+	if (args_bundle->max_depth != -1 && depth >= args_bundle->max_depth) {
+		return;
+	}
+
 	/* skip self and parent directory */
-	if (0 == strcmp(local_name, ".") ||
-	    0 == strcmp(local_name, "..")) {
-		continue;
+	if (0 == strcmp(fileName, ".") ||
+	    0 == strcmp(fileName, "..")) {
+		return;
 	}
 
 	/* skip hidden */
 	if (args_bundle->ignore_hidden &&
-	    local_name[0] == '.') {
-		continue;
+	    fileName[0] == '.') {
+		return;
 	}
 
 
@@ -162,7 +165,7 @@ check_file(const char *local_name, const char *local_path,
 		fprintf(stderr, FILE_ACCESS_WRN_MSG,
 		    local_path, strerror(errno));
 		isLink = 0;
-		goto cleanupAndContinue;
+		return;
 	}
 
 	if (!args_bundle->follow_links &&
@@ -170,16 +173,16 @@ check_file(const char *local_name, const char *local_path,
 		fprintf(stderr, FILE_ACCESS_WRN_MSG,
 		    local_path, strerror(errno));
 		isLink = 0;
-		goto cleanupAndContinue;
+		return;
 	}
 
 	isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
 
 	/* start file testing only if the min depth has been reached */
-	if (validDepth) {
+	if (args_bundle->min_depth < depth) {
 
 		/* prepare file infomation pack */
-		file_info.file_entry = file_entry;
+		file_info.file_name = fileName;
 		file_info.local_path = local_path;
 		file_info.file_entry_stat = file_entry_stat;
 		file_info.time_now = args_bundle->time_now;
@@ -210,16 +213,6 @@ check_file(const char *local_name, const char *local_path,
 		closedir(subdir);
 		(*recurse) = 1; 
 	}
-
-cleanupAndContinue:
-
-	/* dealloc path */
-	if (local_path_out)
-	{
-		(*local_path_out) = local_path;
-	} else {
-		free(local_path);
-	}
 }
 
 void
@@ -229,13 +222,9 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 	struct dirent * file_entry; /* current file name */
 	int local_path_length;
 	char *local_path = NULL;
+	struct stat file_entry_stat;
 	node_t *node; /* node returned by try_add_node */
-	char validDepth; /* current depth is within specified bounds */
 	char recurse;
-
-	validDepth =
-	    args_bundle->min_depth < depth &&
-	    (args_bundle->max_depth == -1 || depth < args_bundle->max_depth);
 
 	/* make sure we aren't in path loop */
 	/* check only if link-following is allowed */
@@ -272,10 +261,10 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 		snprintf(local_path, local_path_length, "%s/%s",
 		    path, file_entry->d_name);
 
-		check_file(file_entry->d_name, local_path, args_bundle,
-		    validDepth, &recurse);
+		check_file(file_entry, local_path, args_bundle,
+		    depth, &recurse);
 
-		if (1 == recurse) {
+		if (recurse) {
 			crawl_recursive(local_path, args_bundle, depth+1, list);
 		}
 
