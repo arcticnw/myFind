@@ -18,7 +18,7 @@ string_to_lower(char *data) {
 }
 
 char *
-copy_string_part(const char *source, int start, int length){
+copy_string_part(const char *source, int start, int length) {
 	char *target;
 	size_t i;
 
@@ -32,11 +32,13 @@ copy_string_part(const char *source, int start, int length){
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
 
-	for (i = start; i < (start+length) && source[i] != '\0'; i++)
+	for (i = start; i < (start+length) && source[i] != '\0'; i++) {
 		target[i] = source[i];
+	}
 
-	for ( ; i < start+length+1; i++)
+	for (; i < start+length+1; i++) {
 		target[i] = '\0';
+	}
 
 	return (target);
 }

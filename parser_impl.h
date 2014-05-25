@@ -27,7 +27,7 @@ dispose_action(action_t *action);
 
 /* safely converts provided string to long */
 static long
-convert_string_to_long(const char* str)
+convert_string_to_long(const char * str);
 
 
 /* this function initializes a data-holding struct from provided condition */
@@ -62,12 +62,6 @@ make_empty_condition(check_t checker);
 /* an argument from argument list at current position as a string */
 static condition_t *
 make_string_condition(check_t checker);
-
-
-/* this function initializes new condition using provided check-function and */
-/* two arguments from argument list at current position as strings */
-static condition_t *
-make_string_string_condition(check_t checker);
 
 
 /* this function initializes new condition using provided check-function and */

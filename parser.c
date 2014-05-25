@@ -28,7 +28,7 @@
 
 #define	EXPR_EXPECTED "Expression expected"
 #define	INT_EXPECTED "Integer argument expected"
-#define INT_INVALID "Invalid integer value"
+#define	INT_INVALID "Invalid integer value"
 #define	STR_EXPECTED "String argument expected"
 #define	SEMICOL_EXPECTED "';' expected at the end of 'exec' argument list"
 #define	UNKNOWN_TOKEN "Unknown token"
@@ -38,10 +38,10 @@
 
 
 
-int argument_count;
-char **argument_data;
-int next_arg_index;
-char *current_argument;
+static int argument_count;
+static char **argument_data;
+static int next_arg_index;
+static char *current_argument;
 
 args_bundle_t *
 parse_arguments(int argc, char **argv) {
@@ -56,11 +56,12 @@ parse_arguments(int argc, char **argv) {
 	args_bundle = initialize_args_bundle();
 	path_length = strlen(argument_data[1]);
 	if ('/' == argument_data[1][path_length-1]) {
-		args_bundle->path = copy_string_part(argument_data[1], 0, path_length-1);
+		args_bundle->path = copy_string_part(argument_data[1], 0,
+		    path_length-1);
 	} else {
 		args_bundle->path = copy_string(argument_data[1]);
 	}
-	
+
 	args_bundle->condition = build_condition_tree(args_bundle);
 
 	if (!args_bundle->action) {
@@ -160,9 +161,8 @@ dispose_action(action_t *action) {
 	free(action);
 }
 
-
 static long
-convert_string_to_long(const char* str){
+convert_string_to_long(const char * str) {
 	long val;
 	char *endptr;
 
@@ -172,7 +172,7 @@ convert_string_to_long(const char* str){
 		errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1, INT_INVALID);
 	}
 
-	return(val);
+	return (val);
 }
 
 static void
@@ -249,24 +249,6 @@ make_string_condition(check_t checker) {
 	increment_current_argument(STR_EXPECTED);
 	create_string_data(current_argument, &condition->data1);
 	condition->data1_content = STRING;
-
-	return (condition);
-}
-
-
-static condition_t *
-make_string_string_condition(check_t checker) {
-	condition_t *condition;
-
-	condition = make_empty_condition(checker);
-
-	increment_current_argument(STR_EXPECTED);
-	create_string_data(current_argument, &condition->data1);
-	condition->data1_content = STRING;
-
-	increment_current_argument(STR_EXPECTED);
-	create_string_data(current_argument, &condition->data2);
-	condition->data2_content = STRING;
 
 	return (condition);
 }

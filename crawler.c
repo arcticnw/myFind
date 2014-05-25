@@ -134,7 +134,7 @@ check_file(struct dirent *file_entry, char *local_path,
 	char *fileName;
 
 	if (recurse) {
-		(*recurse) = 0; 
+		(*recurse) = 0;
 	}
 
 	if (!file_entry) {
@@ -212,7 +212,7 @@ check_file(struct dirent *file_entry, char *local_path,
 	    depth + 1 < args_bundle->max_depth) &&
 	    (subdir = opendir(local_path))) {
 		closedir(subdir);
-		(*recurse) = 1; 
+		(*recurse) = 1;
 	}
 }
 

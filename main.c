@@ -53,7 +53,7 @@ help(const char *name) {
 	printf("cmin n\n    will match files created n minutes ago\n");
 	printf("ctime n\n    will match files created n days ago\n");
 	printf("cnewer file\n    will match files created more recently "
-	     "than file\n");
+	    "than file\n");
 	printf("\n");
 
 	/* mmin, mtime, mnewer */
@@ -114,7 +114,7 @@ void
 usage(const char *name) {
 	printf("Usage: %s path [options] [expression [expression [..]]]\n\n",
 	    name);
-	    
+
 	printf("options are: -follow, -nofollow, -ignorehidden, "
 	    "-noignorehidden, -mindepth n, -maxdepth n, --help\n\n");
 
@@ -143,7 +143,7 @@ main(int argc, char **argv) {
 	}
 
 	args_bundle = parse_arguments(argc, argv);
-	
+
 	if (args_bundle->show_help) {
 		help(argv[0]);
 	} else {
