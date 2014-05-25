@@ -13,6 +13,12 @@
 #include "common.h"
 #include "crawler.h"
 
+#define	FILE_ACCESS_WRN_MSG "Unable to access file %s: %s\n"
+#define	DIR_ACCESS_WRN_MSG "Unable to access directory %s: %s\n"
+#define	DIR_LOOP_WRN_MSG_PRFX "File system loop detected: "
+#define	DIR_LOOP_WRN_MSG DIR_LOOP_WRN_MSG_PRFX "%s was already visited in %s\n"
+#define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
+
 node_list_t *
 initialize_node_list() {
 	node_list_t *nodes = NULL;
@@ -101,11 +107,19 @@ do_actions(const args_bundle_t *args_bundle, file_info_bundle_t file) {
 void
 crawl(const args_bundle_t *args_bundle) {
 	node_list_t *nodes = NULL;
+	char valid_depth;
 
 	assert(args_bundle->action);
 
 	/* initialize node list for path loop detection */
 	nodes = initialize_node_list();
+
+	validDepth =
+	    args_bundle->min_depth < 0 &&
+	    (args_bundle->max_depth == -1 || 0 < args_bundle->max_depth);
+
+	check_file(args_bundle->path, args_bundle->path, args_bundle,
+	    validDepth, NULL);
 
 	/* start the search */
 	crawl_recursive(args_bundle->path, args_bundle, 0, nodes);
@@ -114,20 +128,110 @@ crawl(const args_bundle_t *args_bundle) {
 }
 
 void
-crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
-    node_list_t *list) {
-	DIR * dir; /* current directory */
+check_file(const char *local_name, const char *local_path,
+    const args_bundle_t *args_bundle, char validDepth, char *recurse) {
+
 	DIR * subdir; /* subdirectory */
-	struct dirent * file_entry; /* current file name */
 	struct stat file_entry_stat; /* current file status */
 	char *local_path = NULL; /* relative path to current file */
 	int local_path_length; /* (string) length of relative path */
-	char *real_path = NULL; /* absolute path to current file */
 	char isLink; /* current file is symlink */
 	file_info_bundle_t file_info; /* current file information pack */
 	int result; /* result of matching with conditions */
+	
+	if (recurse) {
+		(*recurse) = 0; 
+	}
+	
+	/* skip self and parent directory */
+	if (0 == strcmp(local_name, ".") ||
+	    0 == strcmp(local_name, "..")) {
+		continue;
+	}
+
+	/* skip hidden */
+	if (args_bundle->ignore_hidden &&
+	    local_name[0] == '.') {
+		continue;
+	}
+
+
+	/* get file status */
+	if (args_bundle->follow_links &&
+	    stat(local_path, &file_entry_stat)) {
+		fprintf(stderr, FILE_ACCESS_WRN_MSG,
+		    local_path, strerror(errno));
+		isLink = 0;
+		goto cleanupAndContinue;
+	}
+
+	if (!args_bundle->follow_links &&
+	    lstat(local_path, &file_entry_stat)) {
+		fprintf(stderr, FILE_ACCESS_WRN_MSG,
+		    local_path, strerror(errno));
+		isLink = 0;
+		goto cleanupAndContinue;
+	}
+
+	isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
+
+	/* start file testing only if the min depth has been reached */
+	if (validDepth) {
+
+		/* prepare file infomation pack */
+		file_info.file_entry = file_entry;
+		file_info.local_path = local_path;
+		file_info.file_entry_stat = file_entry_stat;
+		file_info.time_now = args_bundle->time_now;
+
+		if (args_bundle->condition) {
+			/* match file with find conditions */
+			result = args_bundle->condition->do_check(
+			    args_bundle->condition, file_info);
+		} else {
+			/* no condition => match everything */
+			result = 1;
+		}
+
+		/* if matching => apply actions */
+		if (result) {
+			do_actions(args_bundle, file_info);
+		}
+
+	}
+
+	/* if file isn't symlink and link-following is off, */
+	/* attempt to open file as directory and traverse it */
+
+	if (recurse && (args_bundle->follow_links || !isLink) &&
+	    (args_bundle->max_depth == -1 ||
+	    depth + 1 < args_bundle->max_depth) &&
+	    (subdir = opendir(local_path))) {
+		closedir(subdir);
+		(*recurse) = 1; 
+	}
+
+cleanupAndContinue:
+
+	/* dealloc path */
+	if (local_path_out)
+	{
+		(*local_path_out) = local_path;
+	} else {
+		free(local_path);
+	}
+}
+
+void
+crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
+    node_list_t *list) {
+	DIR * dir; /* current directory */
+	struct dirent * file_entry; /* current file name */
+	int local_path_length;
+	char *local_path = NULL;
 	node_t *node; /* node returned by try_add_node */
 	char validDepth; /* current depth is within specified bounds */
+	char recurse;
 
 	validDepth =
 	    args_bundle->min_depth < depth &&
@@ -141,8 +245,7 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 			    path, strerror(errno));
 			return;
 		}
-		if (args_bundle->follow_links && !try_add_node(list, path,
-		    file_entry_stat.st_ino, &node)) {
+		if (!try_add_node(list, path, file_entry_stat.st_ino, &node)) {
 			fprintf(stderr, DIR_LOOP_WRN_MSG,
 			    path, node->local_name);
 			return;
@@ -157,17 +260,6 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 
 	/* traverse directory */
 	while ((file_entry = readdir(dir))) {
-		/* skip self and parent directory */
-		if (0 == strcmp(file_entry->d_name, ".") ||
-		    0 == strcmp(file_entry->d_name, "..")) {
-			continue;
-		}
-
-		/* skip hidden */
-		if (args_bundle->ignore_hidden &&
-		    file_entry->d_name[0] == '.') {
-			continue;
-		}
 
 		/* get relative path */
 		local_path_length = strlen(path) +
@@ -176,72 +268,17 @@ crawl_recursive(const char *path, const args_bundle_t *args_bundle, int depth,
 		if (!local_path) {
 			errx(127, MALLOC_ERR_MSG, strerror(errno));
 		}
+
 		snprintf(local_path, local_path_length, "%s/%s",
 		    path, file_entry->d_name);
 
-		/* get absolute path */
-		real_path = realpath(local_path, NULL);
+		check_file(file_entry->d_name, local_path, args_bundle,
+		    validDepth, &recurse);
 
-		/* get file status */
-		if (args_bundle->follow_links &&
-		    stat(local_path, &file_entry_stat)) {
-			fprintf(stderr, FILE_ACCESS_WRN_MSG,
-			    local_path, strerror(errno));
-			isLink = 0;
-			goto cleanupAndContinue;
-		}
-
-		if (!args_bundle->follow_links &&
-		    lstat(local_path, &file_entry_stat)) {
-			fprintf(stderr, FILE_ACCESS_WRN_MSG,
-			    local_path, strerror(errno));
-			isLink = 0;
-			goto cleanupAndContinue;
-		}
-
-		isLink = (S_ISLNK(file_entry_stat.st_mode) != 0);
-
-		/* start file testing only if the min depth has been reached */
-		if (validDepth) {
-
-			/* prepare file infomation pack */
-			file_info.file_entry = file_entry;
-			file_info.local_path = local_path;
-			file_info.real_path = real_path;
-			file_info.file_entry_stat = file_entry_stat;
-			file_info.time_now = args_bundle->time_now;
-
-			if (args_bundle->condition) {
-				/* match file with find conditions */
-				result = args_bundle->condition->do_check(
-				    args_bundle->condition, file_info);
-			} else {
-				/* no condition => match everything */
-				result = 1;
-			}
-
-			/* if matching => apply actions */
-			if (result) {
-				do_actions(args_bundle, file_info);
-			}
-
-		}
-
-		/* if file isn't symlink and link-following is off, */
-		/* attempt to open file as directory and traverse it */
-
-		if ((args_bundle->follow_links || !isLink) &&
-		    (args_bundle->max_depth == -1 ||
-		    depth + 1 < args_bundle->max_depth) &&
-		    (subdir = opendir(local_path))) {
-			closedir(subdir);
+		if (1 == recurse) {
 			crawl_recursive(local_path, args_bundle, depth+1, list);
 		}
 
-cleanupAndContinue: /* ask if allowed to use goto */
-
-		/* dealloc paths */
-		free(real_path);
 		free(local_path);
 	}
 

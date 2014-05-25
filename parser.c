@@ -16,6 +16,24 @@
 #include "checker.h"
 #include "action.h"
 
+#define	ARG_ERR_MSG "Argument parsing error at position %d: "
+
+#define	ARG1_ERR_MSG ARG_ERR_MSG "%s"
+#define	ARG1_GROUP_ERR_MSG ARG_ERR_MSG "Unable to access group information: %s"
+#define	ARG1_USER_ERR_MSG ARG_ERR_MSG "Unable to access user information: %s"
+
+#define	ARG2_ERR_MSG ARG_ERR_MSG "%s: %s"
+#define	ARG2_FILE_ERR_MSG ARG_ERR_MSG "Unable to access file %s: %s"
+
+#define	EXPR_EXPECTED "Expression expected"
+#define	INT_EXPECTED "Integer argument expected"
+#define INT_INVALID "Invalid integer value"
+#define	STR_EXPECTED "String argument expected"
+#define	SEMICOL_EXPECTED "';' expected at the end of 'exec' argument list"
+#define	UNKNOWN_TOKEN "Unknown token"
+#define	PARENTH_UNEXPECTED "')' unexpected at this point"
+#define	ENTRY_NONEXISTENT "Entry doesn't exist"
+#define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
 
 int argument_count;
 char **argument_data;
@@ -25,6 +43,7 @@ char *current_argument;
 args_bundle_t *
 parse_arguments(int argc, char **argv) {
 	args_bundle_t *args_bundle;
+	int path_length;
 
 	argument_count = argc;
 	argument_data = argv;
@@ -32,7 +51,14 @@ parse_arguments(int argc, char **argv) {
 	current_argument = NULL;
 
 	args_bundle = initialize_args_bundle();
-	args_bundle->path = argument_data[1];
+	//args_bundle->path = argument_data[1];
+	path_length = strlen(argument_data[1]);
+	if ('/' == argument_data[1][path_length-1]) {
+		args_bundle->path = copy_string_part(argument_data[1], 0, path_length-1);
+	} else {
+		args_bundle->path = copy_string(argument_data[1]);
+	}
+	
 	args_bundle->condition = build_condition_tree(args_bundle);
 
 	if (!args_bundle->action) {
@@ -53,6 +79,7 @@ initialize_args_bundle() {
 	if (!args_bundle) {
 		errx(127, MALLOC_ERR_MSG, strerror(errno));
 	}
+	args_bundle->show_help = 0;
 	args_bundle->follow_links = 0;
 	args_bundle->ignore_hidden = 1;
 	args_bundle->min_depth = -1;
@@ -83,7 +110,7 @@ dispose_args_bundle(args_bundle_t *args_bundle) {
 	if (args_bundle->action) {
 		dispose_action(args_bundle->action);
 	}
-
+	free(args_bundle->path);
 	free(args_bundle);
 }
 
@@ -132,6 +159,20 @@ dispose_action(action_t *action) {
 }
 
 
+long
+convert_string_to_long(const char* str){
+	long val;
+	char *endptr;
+
+	errno = 0;
+	val = strtol(str, endptr, 10);
+	if (errno != 0) {
+		errx(3, ARG1_GROUP_ERR_MSG, next_arg_index - 1, INT_INVALID);
+	}
+
+	return(val);
+}
+
 void
 create_condition_data(condition_t *condition, data_t *result) {
 	result->condition_data = condition;
@@ -162,7 +203,7 @@ create_int_data(char *original_data, char *comparison, data_t *result) {
 		*comparison = ' ';
 	}
 
-	value = atol(parse_data);
+	value = convert_string_to_long(parse_data);
 	result->long_data = value;
 }
 
@@ -509,10 +550,14 @@ try_parse_option(args_bundle_t *args_bundle) {
 		args_bundle->ignore_hidden = 0;
 	} else if (0 == strcmp(current_argument, "-mindepth")) {
 		increment_current_argument(INT_EXPECTED);
-		args_bundle->min_depth = atol(current_argument);
+		args_bundle->min_depth =
+		    convert_string_to_long(current_argument);
 	} else if (0 == strcmp(current_argument, "-maxdepth")) {
 		increment_current_argument(INT_EXPECTED);
-		args_bundle->max_depth = atol(current_argument);
+		args_bundle->max_depth =
+		    convert_string_to_long(current_argument);
+	} else if (0 == strcmp(current_argument, "--help")) {
+		args_bundle->show_help = 1;
 	} else {
 		/* no match found => not an option */
 		return (0);

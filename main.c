@@ -7,88 +7,71 @@
 #include "crawler.h"
 
 void
-usage(const char *name) {
+help(const char *name) {
 	printf("Usage: %s path [options] [expression [expression [..]]]\n\n",
 	    name);
 
 	/* options */
 	printf("[options]:\n\n");
 
+	printf("--help\n    will show this screen, won't perform any search\n");
+
 	/* follow, no follow */
-	printf("%s\n    %s\n", "-follow",
-	    "will resolve symlinks and will dive into directory symlinks");
-	printf("%s\n    %s\n    %s\n", "-nofollow",
-	    "won't resolve symlinks and won't dive into directory symlinks",
-	    "default");
+	printf("-follow\n    will resolve symlinks and will dive into "
+	    "directory symlinks\n");
+	printf("-nofollow\n    won't resolve symlinks and won't dive into "
+	    "directory symlinks\n    default");
 
 	/* ignore hidden, no ignore hidden */
-	printf("%s\n    %s\n    %s\n", "-ignorehidden",
-	    "will ignore hidden files",
-	    "default");
-	printf("%s\n    %s\n", "-noignorehidden",
-	    "won't ignore hidden files");
+	printf("-ignorehidden\n    will ignore hidden files\n    default\n");
+	printf("-noignorehidden\n    won't ignore hidden files\n");
 
 	/* min depth, max depth */
-	printf("%s\n    %s\n", "-mindepth n",
-	    "minimal level in the directory tree before the search will "
-	    "be performed");
-	printf("%s\n    %s\n", "-maxdepth n",
-	    "maximal level in the directory tree before the search will no"
-	    "longer search");
+	printf("-mindepth n\n    minimal level in the directory tree before "
+	    "the search will be performed\n");
+	printf("-maxdepth n\n    maximal level in the directory tree before "
+	    "the search will no longer search\n");
 
 
 	/* expressions */
 	printf("\n\n[expression]:\n(without preceding dash symbol)\n\n");
 
 	/* name, iname */
-	printf("%s\n    %s\n", "name filename",
-	    "will match files with filename pattern");
-	printf("%s\n    %s\n    %s\n", "iname filename",
-	    "will match files with filename pattern",
-	    "case insensitive");
+	printf("name filename\n    will match files with filename pattern\n");
+	printf("iname filename\n    will match files with case insensitive"
+	    "filename pattern\n");
 	printf("\n");
 
 	/* amin, atime, anewer */
-	printf("%s\n    %s\n", "amin n",
-		"will match files accessed n minutes ago");
-	printf("%s\n    %s\n", "atime n",
-		"will match files accessed n days ago");
-	printf("%s\n    %s\n", "anewer file",
-		"will match files accessed more recently than file");
+	printf("amin n\n    will match files accessed n minutes ago\n");
+	printf("atime n\n    will match files accessed n days ago\n");
+	printf("anewer file\n    will match files accessed more recently "
+	    "than file\n");
 	printf("\n");
 
 	/* cmin, ctime, cnewer */
-	printf("%s\n    %s\n", "cmin n",
-		"will match files created n minutes ago");
-	printf("%s\n    %s\n", "ctime n",
-		"will match files created n days ago");
-	printf("%s\n    %s\n", "cnewer file",
-		"will match files created more recently than file");
+	printf("cmin n\n    will match files created n minutes ago\n");
+	printf("ctime n\n    will match files created n days ago\n");
+	printf("cnewer file\n    will match files created more recently "
+	     "than file\n");
 	printf("\n");
 
 	/* mmin, mtime, mnewer */
-	printf("%s\n    %s\n", "mmin n",
-		"will match files modified n minutes ago");
-	printf("%s\n    %s\n", "mtime n",
-		"will match files modified n days ago");
-	printf("%s\n    %s\n", "mnewer file",
-		"will match files modified more recently than file");
+	printf("mmin n\n    will match files modified n minutes ago\n");
+	printf("mtime n\n    will match files modified n days ago\n");
+	printf("mnewer file\n    will match files modified more recently "
+	    "than file\n");
 	printf("\n");
 
-	printf("%s\n    %s\n", "empty",
-		"will match empty regular files and empty directories");
-	printf("%s\n    %s\n", "size n",
-		"will compare the file size with provided number");
+	printf("empty\n    will match empty regular files and empty "
+	    "directories\n");
+	printf("size n\n    will compare the file size with provided number\n");
 	printf("\n");
 
-	printf("%s\n    %s\n", "gid n",
-		"will match file group id with provided number");
-	printf("%s\n    %s\n", "group name",
-		"will match file group with provided name");
-	printf("%s\n    %s\n", "uid n",
-		"will match file user id with provided number");
-	printf("%s\n    %s\n", "user name",
-		"will match file user with provided name");
+	printf("gid n\n    will match file group id with provided number\n");
+	printf("group name\n    will match file group with provided name\n");
+	printf("uid n\n    will match file user id with provided number\n");
+	printf("user name\n    will match file user with provided name\n");
 	printf("\n");
 
 
@@ -99,35 +82,53 @@ usage(const char *name) {
 	    "-n   for expressing 'less than' n\n\n\n");
 
 	/* boolean operations */
-	printf("%s\n    %s\n", "true",
-	    "always passes");
-	printf("%s\n    %s\n", "false",
-	    "never passes");
+	printf("true\n    always passes\n");
+	printf("false\n    never passes\n");
 	printf("\n");
-	printf("%s\n    %s\n    %s\n", "[expression] and [expression]",
-	    "both preceding and following operands have to be true",
-	    "'and' operator has tighter associativity than 'or' operator");
-	printf("%s\n    %s\n", "[expression] or [expression]",
-	    "either preceding or succeding operand has to be true");
-	printf("%s\n    %s\n", "([expression])",
-	    "expressions contained within are grouped for the use of other "
-	    "operands");
-	printf("%s\n%s\n    %s\n", "not [expression]", "! [expression]",
-	    "following expression will be negated");
+	printf("[expression] and [expression]\n    both preceding and "
+	    "following operands have to be true\n    'and' operator has "
+	    "tighter associativity than 'or' operator\n");
+	printf("[expression] or [expression]\n    either preceding or "
+	    "succeding operand has to be true\n");
+	printf("([expression])\n    expressions contained within are grouped "
+	    "for the use of other operands\n");
+	printf("not [expression]\n! [expression]\n    following expression "
+	    "will be negated\n");
 
 	/* actions */
 	printf("\n");
-	printf("%s\n    %s\n", "print",
-	    "local path to the matching files will be printed to"
-	    "standard output");
-	printf(
-	    "exec executable [arguments to executable | %s] ;\n"
+	printf("print\n    local path to the matching files will be printed "
+	    "to standard output\n");
+	printf("exec executable [arguments to executable | %s] ;\n"
 	    "    when file is matched an _executable_ will be ran with "
 	    "specified arguments\n"
 	    "    all '%s' arguments will be replaced with the name "
 	    "(and local path) of the matched file\n"
 	    "    list of parameters has to be terminated with ';'",
 	    EXEC_REPLACE_TOKEN, EXEC_REPLACE_TOKEN);
+
+	printf("\n\n");
+}
+
+void
+usage(const char *name) {
+	printf("Usage: %s path [options] [expression [expression [..]]]\n\n",
+	    name);
+	    
+	printf("options are: -follow, -nofollow, -ignorehidden, "
+	    "-noignorehidden, -mindepth n, -maxdepth n, --help\n\n");
+
+	printf("expression may be one of following (without preceding dash "
+	    "symbol):\n");
+	printf("tests: name filename, iname filename, filename pattern, "
+	    "amin n, atime n, anewer file, cmin n, ctime n, cnewer file, "
+	    "mmin n, mtime n, mnewer file, empty, size n, gid n, group name, "
+	    "uid n, user name\n");
+	printf("operators: true, false, expr and expr, expr or expr, ( expr ), "
+	    "not [expr], ! [expr]\n");
+
+	printf("actions: print, exec executable [args | %s] ;\n"
+	    EXEC_REPLACE_TOKEN);
 
 	printf("\n\n");
 }
@@ -142,8 +143,12 @@ main(int argc, char **argv) {
 	}
 
 	args_bundle = parse_arguments(argc, argv);
-
-	crawl(args_bundle);
+	
+	if (args_bundle->show_help) {
+		help(argv[0]);
+	} else {
+		crawl(args_bundle);
+	}
 
 	dispose_args_bundle(args_bundle);
 

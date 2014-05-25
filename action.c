@@ -11,6 +11,10 @@
 #include "common.h"
 #include "action.h"
 
+#define	FORK_ERR_MSG "Failed to fork: %s"
+#define	EXEC_ERR_MSG "Failed to exec: %s"
+#define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
+
 void
 do_print(action_t *action, file_info_bundle_t file) {
 	printf("%s\n", file.local_path);

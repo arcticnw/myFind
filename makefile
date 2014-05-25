@@ -1,5 +1,4 @@
-#CFLAGS     = -Wall -pedantic -ggdb
-CFLAGS     = -pedantic
+CFLAGS     = -Wall -pedantic -ggdb
 EXECUTABLE = myFind
 SOURCES    = $(wildcard ./*.c)
 OBJECTS    = $(SOURCES:.c=.o)

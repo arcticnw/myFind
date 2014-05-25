@@ -7,6 +7,7 @@
 
 #include "common.h"
 
+#define	MALLOC_ERR_MSG "Failed to allocate memory: %s"
 
 void
 string_to_lower(char *data) {
@@ -16,6 +17,30 @@ string_to_lower(char *data) {
 	}
 }
 
+char *
+copy_string_part(const char *source, int start, int length){
+	char *target;
+
+	if (!source)  {
+		return (NULL);
+	}
+
+	target = malloc(sizeof (char) * (length + 1));
+
+	if (!target) {
+		errx(127, MALLOC_ERR_MSG, strerror(errno));
+	}
+
+	size_t i;
+
+	for (i = start; i < (start+length) && source[i] != '\0'; i++)
+		target[i] = source[i];
+
+	for ( ; i < start+length+1; i++)
+		target[i] = '\0';
+
+	return (target);
+}
 
 char *
 copy_string(const char *source) {
