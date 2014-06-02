@@ -210,9 +210,14 @@ check_file(struct dirent *file_entry, char *local_path,
 	if (recurse && (args_bundle->follow_links || !isLink) &&
 	    (args_bundle->max_depth == -1 ||
 	    depth + 1 < args_bundle->max_depth) &&
-	    (subdir = opendir(local_path))) {
-		closedir(subdir);
-		(*recurse) = 1;
+	    S_ISDIR(file_entry_stat.st_mode)) {
+		if (!(subdir = opendir(local_path))) {
+			fprintf(stderr, DIR_ACCESS_WRN_MSG, local_path,
+			    strerror(errno));
+		} else {
+			closedir(subdir);
+			(*recurse) = 1;
+		}
 	}
 }
 
